@@ -16,6 +16,7 @@ Every problem folder has the same structure:
 | # | Problem |
 |---|---|
 | 001 | [Payment API double-charges customers when the mobile app retries](problems/001-idempotent-payment-retries) |
+| 002 | [One client's script floods the public API and slows it for everyone](problems/002-token-bucket-rate-limiter) |
 <!-- INDEX:END -->
 
 ## Run the tests
