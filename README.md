@@ -15,6 +15,7 @@ Every problem folder has the same structure:
 <!-- INDEX:START -->
 | # | Problem |
 |---|---|
+| 001 | [Payment API double-charges customers when the mobile app retries](problems/001-idempotent-payment-retries) |
 <!-- INDEX:END -->
 
 ## Run the tests
