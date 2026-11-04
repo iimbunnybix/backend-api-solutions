@@ -25,6 +25,7 @@ Every problem folder has the same structure:
 | 008 | [Customers saw "checkout timed out", retried, and found their card charged twice](problems/008-deadline-propagation-timeouts) |
 | 009 | [Product pages went down because the optional "you may also like" widget's service was slow](problems/009-circuit-breaker-slow-dependency) |
 | 010 | [Order confirmation emails stopped for six hours while the queue consumer ran at 100% CPU](problems/010-poison-message-dead-letter) |
+| 011 | [Dishes the kitchen marked "sold out" kept showing as available in the app for a whole day](problems/011-cache-invalidation-stale-set-race) |
 <!-- INDEX:END -->
 
 ## Run the tests
