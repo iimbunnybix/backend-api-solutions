@@ -18,6 +18,7 @@ Every problem folder has the same structure:
 | 001 | [Payment API double-charges customers when the mobile app retries](problems/001-idempotent-payment-retries) |
 | 002 | [One client's script floods the public API and slows it for everyone](problems/002-token-bucket-rate-limiter) |
 | 003 | [Order history page gets slower the more orders a customer has, and the database CPU climbs with it](problems/003-n-plus-one-order-listing) |
+| 004 | [Mobile activity feed shows the same items twice while scrolling, and some items never appear](problems/004-keyset-pagination-duplicates) |
 <!-- INDEX:END -->
 
 ## Run the tests
