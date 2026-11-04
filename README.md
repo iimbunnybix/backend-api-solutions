@@ -26,6 +26,7 @@ Every problem folder has the same structure:
 | 009 | [Product pages went down because the optional "you may also like" widget's service was slow](problems/009-circuit-breaker-slow-dependency) |
 | 010 | [Order confirmation emails stopped for six hours while the queue consumer ran at 100% CPU](problems/010-poison-message-dead-letter) |
 | 011 | [Dishes the kitchen marked "sold out" kept showing as available in the app for a whole day](problems/011-cache-invalidation-stale-set-race) |
+| 012 | [Finance found invoices that didn't add up and tax lines a cent short, every single day](problems/012-float-money-rounding-cents) |
 <!-- INDEX:END -->
 
 ## Run the tests
