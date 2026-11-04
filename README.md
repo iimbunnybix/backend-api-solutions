@@ -20,6 +20,7 @@ Every problem folder has the same structure:
 | 003 | [Order history page gets slower the more orders a customer has, and the database CPU climbs with it](problems/003-n-plus-one-order-listing) |
 | 004 | [Mobile activity feed shows the same items twice while scrolling, and some items never appear](problems/004-keyset-pagination-duplicates) |
 | 005 | [Checkout API hangs for every user a few minutes after a spike in validation errors, and only a restart fixes it](problems/005-connection-pool-leak-exhaustion) |
+| 006 | [Customers were charged but their orders never shipped, and nothing in the logs said why](problems/006-transactional-outbox-lost-events) |
 <!-- INDEX:END -->
 
 ## Run the tests
