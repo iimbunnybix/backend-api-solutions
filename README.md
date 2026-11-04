@@ -22,6 +22,7 @@ Every problem folder has the same structure:
 | 005 | [Checkout API hangs for every user a few minutes after a spike in validation errors, and only a restart fixes it](problems/005-connection-pool-leak-exhaustion) |
 | 006 | [Customers were charged but their orders never shipped, and nothing in the logs said why](problems/006-transactional-outbox-lost-events) |
 | 007 | [Merchandisers' price changes kept reverting a few minutes after they saved them](problems/007-optimistic-locking-lost-updates) |
+| 008 | [Customers saw "checkout timed out", retried, and found their card charged twice](problems/008-deadline-propagation-timeouts) |
 <!-- INDEX:END -->
 
 ## Run the tests
