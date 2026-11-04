@@ -23,6 +23,7 @@ Every problem folder has the same structure:
 | 006 | [Customers were charged but their orders never shipped, and nothing in the logs said why](problems/006-transactional-outbox-lost-events) |
 | 007 | [Merchandisers' price changes kept reverting a few minutes after they saved them](problems/007-optimistic-locking-lost-updates) |
 | 008 | [Customers saw "checkout timed out", retried, and found their card charged twice](problems/008-deadline-propagation-timeouts) |
+| 009 | [Product pages went down because the optional "you may also like" widget's service was slow](problems/009-circuit-breaker-slow-dependency) |
 <!-- INDEX:END -->
 
 ## Run the tests
