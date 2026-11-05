@@ -64,7 +64,12 @@ def tax_cents(net_cents: int, rate: str | Decimal,
     The rounding mode is a business/legal decision: many tax authorities
     require half-up; ``ROUND_HALF_EVEN`` (banker's rounding) avoids upward bias
     when summing many rounded values.
+
+    A float rate is rejected for the same reason ``to_cents`` rejects float
+    money: ``Decimal(0.18)`` is 0.17999..., which brings the rounding bug back.
     """
+    if isinstance(rate, float):
+        raise TypeError("pass the tax rate as a decimal string or Decimal, not float")
     exact = Decimal(net_cents) * Decimal(rate)
     return int(exact.quantize(Decimal(1), rounding=rounding))
 

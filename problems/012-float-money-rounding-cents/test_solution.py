@@ -91,6 +91,16 @@ class ExactMoney(unittest.TestCase):
         with self.assertRaises(ValueError):
             installments(100, 0)
 
+    def test_float_tax_rate_is_rejected(self):
+        # Decimal(0.18) is 0.1799..., so 18% of 125 cents would round to 22.
+        self.assertEqual(tax_cents(125, "0.18"), 23)
+        with self.assertRaises(TypeError):
+            tax_cents(125, 0.18)
+
+    def test_invoice_with_float_tax_rate_is_rejected(self):
+        with self.assertRaises(TypeError):
+            build_invoice([Line("a", "1.25", 1)], 0.18)
+
     def test_parse_and_format(self):
         self.assertEqual(to_cents("19.99"), 1999)
         self.assertEqual(to_cents(Decimal("0.10")), 10)
