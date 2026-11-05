@@ -49,6 +49,7 @@ Every problem folder has the same structure:
 | 032 | [Big merchants' "Export orders" button always ended in a 504, and every retry made the database slower](problems/032-long-export-load-balancer-timeout) |
 | 033 | [New users tapping "Continue with Google" got "Something went wrong" on their very first login](problems/033-get-or-create-signup-race) |
 | 034 | [Paid orders vanished during deploys, with no error in any log and an empty queue](problems/034-ack-before-processing-lost-orders) |
+| 035 | [Users who deleted their account got "email already registered" when they tried to come back](problems/035-soft-delete-unique-email-resignup) |
 <!-- INDEX:END -->
 
 ## Run the tests
