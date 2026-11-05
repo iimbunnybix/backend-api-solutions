@@ -50,6 +50,7 @@ Every problem folder has the same structure:
 | 033 | [New users tapping "Continue with Google" got "Something went wrong" on their very first login](problems/033-get-or-create-signup-race) |
 | 034 | [Paid orders vanished during deploys, with no error in any log and an empty queue](problems/034-ack-before-processing-lost-orders) |
 | 035 | [Users who deleted their account got "email already registered" when they tried to come back](problems/035-soft-delete-unique-email-resignup) |
+| 036 | [Autoscaling during a traffic spike made new API instances crash with "too many connections"](problems/036-scale-out-exceeds-db-max-connections) |
 <!-- INDEX:END -->
 
 ## Run the tests
