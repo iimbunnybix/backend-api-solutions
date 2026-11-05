@@ -63,11 +63,28 @@ class IfMatch(unittest.TestCase):
         with self.assertRaises(PreconditionFailed):
             s.put("sku-1", rec, if_match="garbage")
 
-    def test_weak_etag_accepted(self):
+    def test_weak_etag_is_rejected_by_strong_comparison(self):
         s = new_store()
         rec, etag = s.get("sku-1")
-        s.put("sku-1", {**rec, "stock": 1}, if_match="W/" + etag)
-        self.assertEqual(s.get("sku-1")[0]["stock"], 1)
+        with self.assertRaises(PreconditionFailed):
+            s.put("sku-1", {**rec, "stock": 1}, if_match="W/" + etag)
+        self.assertEqual(s.get("sku-1")[0]["stock"], 40)
+
+    def test_non_canonical_etags_never_match_a_real_version(self):
+        s = new_store()
+        rec, _ = s.get("sku-1")
+        for header in ('"v01"', '"v 1"', '"v+1"', '"v\u0661"'):
+            with self.assertRaises(PreconditionFailed, msg=header):
+                s.put("sku-1", {**rec, "stock": 1}, if_match=header)
+        self.assertEqual(s.get("sku-1")[0]["stock"], 40)
+
+    def test_underscore_tag_does_not_match_version_ten(self):
+        s = new_store()
+        for _ in range(9):
+            s.update_with_retry("sku-1", lambda r: {**r, "stock": r["stock"] - 1})
+        self.assertEqual(s.get("sku-1")[1], '"v10"')
+        with self.assertRaises(PreconditionFailed):
+            s.put("sku-1", {"name": "Lamp", "price_cents": 1, "stock": 1}, if_match='"v1_0"')
 
     def test_unknown_product_is_404(self):
         s = new_store()
@@ -84,8 +101,8 @@ class IfMatch(unittest.TestCase):
 
     def test_parse_etag(self):
         self.assertEqual(parse_etag('"v12"'), 12)
-        self.assertEqual(parse_etag('W/"v3"'), 3)
-        for bad in ('v3', '"3"', '"vx"', ''):
+        self.assertEqual(parse_etag(' "v3" '), 3)
+        for bad in ('v3', '"3"', '"vx"', '', 'W/"v3"', '"v03"', '"v0"', '"v1_0"'):
             with self.assertRaises(ValueError):
                 parse_etag(bad)
 

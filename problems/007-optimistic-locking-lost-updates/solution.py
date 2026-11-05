@@ -16,6 +16,7 @@ re-applies a pure function on conflict.
 """
 from __future__ import annotations
 
+import re
 import sqlite3
 import threading
 from typing import Callable
@@ -30,6 +31,10 @@ CREATE TABLE IF NOT EXISTS products (
 );
 """
 EDITABLE = ("name", "price_cents", "stock")
+# Exactly the tags etag_for() issues: strong (no W/), ASCII digits, no leading
+# zeros. RFC 9110 13.1.1 requires strong comparison for If-Match, so anything
+# the server would not have issued character for character is a mismatch.
+CANONICAL_ETAG = re.compile(r'"v([1-9][0-9]*)"', re.ASCII)
 
 
 class NotFound(Exception):
@@ -57,13 +62,15 @@ def etag_for(version: int) -> str:
 
 
 def parse_etag(value: str) -> int:
-    """Parse '"v7"' (optionally weak, W/"v7") into 7. Raises ValueError otherwise."""
-    value = value.strip()
-    if value.startswith("W/"):
-        value = value[2:]
-    if len(value) < 4 or not (value.startswith('"v') and value.endswith('"')):
-        raise ValueError(f"malformed ETag: {value!r}")
-    return int(value[2:-1])
+    """Parse '"v7"' into 7 using strong comparison. Raises ValueError otherwise.
+
+    Weak tags (W/"v7") and non-canonical spellings ("v07", "v 7", "v1_0") are
+    rejected: int() would accept them and let them match a real version.
+    """
+    match = CANONICAL_ETAG.fullmatch(value.strip())
+    if match is None:
+        raise ValueError(f"not a strong ETag issued by this server: {value!r}")
+    return int(match.group(1))
 
 
 class ProductStore:

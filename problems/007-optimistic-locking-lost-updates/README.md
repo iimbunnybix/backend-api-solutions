@@ -29,8 +29,10 @@ Database transactions alone do not help: the race spans two HTTP requests
 3. If zero rows match, the record changed since the client read it: return
    **412 Precondition Failed** with the current ETag, and the UI asks the user
    to reload and re-apply. A missing `If-Match` returns **428 Precondition
-   Required**, so old clients cannot silently bypass the check. A malformed
-   ETag is treated as a mismatch.
+   Required**, so old clients cannot silently bypass the check. `If-Match`
+   uses strong comparison (RFC 9110): only the exact tag the server issued
+   matches, so weak tags (`W/"v3"`) and malformed or non-canonical ones
+   (`"v03"`, `"v1_0"`) are treated as a mismatch.
 4. Machine writers use `update_with_retry(change)`: re-read, re-apply a pure
    function, conditional write, repeat on 412. In the test, 8 threads × 5 stock
    decrements leave stock at exactly 0 and the version at 41 (one bump per
