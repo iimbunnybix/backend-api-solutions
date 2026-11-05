@@ -76,5 +76,30 @@ class TokenBucketTests(unittest.TestCase):
         self.assertEqual(len(lim._buckets), 3)
 
 
+class InvalidCostTests(unittest.TestCase):
+    def setUp(self):
+        self.clock = FakeClock()
+        self.lim = TokenBucketLimiter(rate_per_s=10, capacity=20, clock=self.clock)
+
+    def test_negative_cost_cannot_refill_a_drained_bucket(self):
+        for _ in range(20):
+            self.lim.allow("a")
+        with self.assertRaises(ValueError):
+            self.lim.allow("a", cost=-20)
+        self.assertFalse(self.lim.allow("a").allowed)
+
+    def test_zero_cost_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self.lim.allow("a", cost=0)
+
+    def test_nan_cost_is_rejected_with_value_error(self):
+        with self.assertRaises(ValueError):
+            self.lim.allow("a", cost=float("nan"))
+
+    def test_infinite_cost_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self.lim.allow("a", cost=float("inf"))
+
+
 if __name__ == "__main__":
     unittest.main()

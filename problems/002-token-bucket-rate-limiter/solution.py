@@ -28,6 +28,10 @@ class TokenBucketLimiter:
         self._lock = threading.Lock()
 
     def allow(self, client_id: str, cost: float = 1.0) -> Decision:
+        # Validate before touching the bucket: a negative cost would add tokens,
+        # and NaN fails every comparison and would crash the Retry-After maths.
+        if not math.isfinite(cost) or cost <= 0:
+            raise ValueError("cost must be a positive finite number")
         if cost > self.capacity:
             raise ValueError("cost exceeds bucket capacity; request can never succeed")
         now = self._clock()
