@@ -65,12 +65,26 @@ class Deadline:
         ``max_s`` are clamped so a caller cannot ask us to work forever.
         A zero/negative budget yields an already-expired deadline.
         """
-        raw = headers.get(DEADLINE_HEADER)
+        raw = find_header(headers, DEADLINE_HEADER)
         try:
             budget = int(raw) / 1000 if raw is not None else default_s
         except ValueError:
             budget = default_s
         return cls.after(clock, min(max(budget, 0.0), max_s))
+
+
+def find_header(headers: dict[str, str], name: str) -> str | None:
+    """Return the value of header ``name``, ignoring the case of header names.
+
+    HTTP header names are case-insensitive (RFC 9110), and HTTP/2 sends them
+    in lowercase, so an exact-spelling dict lookup would silently miss the
+    deadline and fall back to the default budget.
+    """
+    wanted = name.lower()
+    for header_name, value in headers.items():
+        if header_name.lower() == wanted:
+            return value
+    return None
 
 
 def call_with_deadline(deadline: Deadline, call: Callable[[float], object], *,

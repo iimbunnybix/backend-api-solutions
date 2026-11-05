@@ -100,6 +100,15 @@ class HeaderPropagation(unittest.TestCase):
         neg = Deadline.from_headers(clock, {DEADLINE_HEADER: "-5"}, 3.0, 30)
         self.assertTrue(neg.expired())
 
+    def test_lowercased_header_from_http2_hop_keeps_the_budget(self):
+        caller_clock = FakeClock()
+        parent = Deadline.after(caller_clock, 2.0)
+        caller_clock.advance(0.75)
+        # HTTP/2 and many proxies deliver header names in lowercase.
+        lowered = {name.lower(): value for name, value in parent.to_header().items()}
+        child = Deadline.from_headers(FakeClock(), lowered, default_s=10, max_s=30)
+        self.assertAlmostEqual(child.remaining(), 1.25)
+
 
 if __name__ == "__main__":
     unittest.main()
