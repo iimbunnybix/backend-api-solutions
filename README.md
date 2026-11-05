@@ -31,6 +31,7 @@ Every problem folder has the same structure:
 | 014 | [Older Android app versions crashed on the order screen right after a backend release that "only renamed a field"](problems/014-breaking-change-api-versioning) |
 | 015 | [Checkout returned 503 for most shoppers because the optional recommendations service got slow](problems/015-bulkhead-shared-worker-pool) |
 | 016 | [Primary database CPU spiked during a scrape of product IDs that don't exist](problems/016-negative-caching-missing-keys) |
+| 017 | [Merchants re-uploaded the same 1,000-row product file a dozen times because one bad row rejected all of it](problems/017-bulk-import-all-or-nothing-rollback) |
 <!-- INDEX:END -->
 
 ## Run the tests
