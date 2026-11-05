@@ -44,6 +44,7 @@ Every problem folder has the same structure:
 | 027 | [Ops dashboard users switched the order filter mid-scroll and orders silently went missing from the list](problems/027-pagination-cursor-not-bound-to-filters) |
 | 028 | [After one member checked out, every shopper saw the member price, and it dropped further with each new member](problems/028-shared-cache-object-mutation) |
 | 029 | [Every API endpoint returned "connection pool exhausted" whenever the payment provider got slow](problems/029-transaction-held-across-payment-call) |
+| 030 | ["My orders" showed only an error for every customer who had used the new click-and-collect option](problems/030-closed-enum-new-value-client-crash) |
 <!-- INDEX:END -->
 
 ## Run the tests
