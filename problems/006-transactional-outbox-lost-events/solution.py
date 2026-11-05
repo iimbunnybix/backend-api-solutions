@@ -140,6 +140,8 @@ class DedupingConsumer:
     def handle(self, event_id: str, payload: dict) -> bool:
         if event_id in self.seen:
             return False
-        self.seen.add(event_id)            # in production: same txn as the side effect
+        # Side effect first: if it raises, the id stays unseen so the broker's
+        # redelivery is processed instead of being dropped as a "duplicate".
         self.shipped.append(payload["order_id"])
+        self.seen.add(event_id)            # in production: same txn as the side effect
         return True

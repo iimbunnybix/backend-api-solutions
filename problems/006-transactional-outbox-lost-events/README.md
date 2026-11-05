@@ -33,7 +33,9 @@ No retry inside the handler fixes this, because the process itself may be gone.
    3 failed relay runs and are then delivered in their original order.
 3. Delivery is **at-least-once**: if the relay crashes after publishing but
    before marking the row, it re-sends. Every event has a stable `event_id`,
-   and `DedupingConsumer` processes each id once.
+   and `DedupingConsumer` processes each id once. It records the id only
+   after the side effect succeeds, so a failed attempt is retried on
+   redelivery instead of being dropped as a duplicate.
 4. `backlog()` is the health signal (alert if it grows), and `purge_sent()`
    keeps the table small.
 

@@ -81,6 +81,16 @@ class Outbox(unittest.TestCase):
         self.assertEqual(len(self.broker.delivered), 2)
         self.assertEqual(self.broker.consumer.shipped, [oid])
 
+    def test_failed_processing_does_not_swallow_redelivery(self):
+        consumer = DedupingConsumer()
+        # First attempt fails inside the side effect (malformed payload).
+        with self.assertRaises(KeyError):
+            consumer.handle("e1", {"orderId": "o1"})
+        # The broker redelivers; it must be processed, exactly once.
+        self.assertTrue(consumer.handle("e1", {"order_id": "o1"}))
+        self.assertFalse(consumer.handle("e1", {"order_id": "o1"}))
+        self.assertEqual(consumer.shipped, ["o1"])
+
     def test_batch_size_and_purge(self):
         for i in range(250):
             place_order(self.db, "bulk", 100)
