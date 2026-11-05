@@ -145,7 +145,15 @@ class ResilientConsumer:
     acked: int = 0
 
     def backoff(self, attempt: int) -> float:
-        return min(self.max_delay, self.base_delay * 2 ** (attempt - 1))
+        """Delay before retry ``attempt``: base * 2**(attempt-1), capped at max_delay."""
+        # Double step by step and stop at the cap. Computing 2 ** (attempt - 1)
+        # first overflows float conversion from attempt 1,025 on.
+        delay = self.base_delay
+        for _ in range(attempt - 1):
+            if delay >= self.max_delay:
+                break
+            delay *= 2
+        return min(self.max_delay, delay)
 
     def process_one(self) -> bool:
         """Receive and handle one message. Returns False when nothing is visible."""

@@ -109,6 +109,25 @@ class DeadLetterFix(unittest.TestCase):
                               base_delay=1.0, max_delay=10.0)
         self.assertEqual([c.backoff(a) for a in range(1, 7)], [1, 2, 4, 8, 10, 10])
 
+    def test_backoff_stays_capped_for_very_high_attempt_numbers(self):
+        c = ResilientConsumer(InMemoryQueue(FakeClock()), lambda b: None, max_delay=60.0)
+        self.assertEqual(c.backoff(1025), 60.0)
+        self.assertEqual(c.backoff(5000), 60.0)
+
+    def test_long_retry_budget_ends_in_dlq_instead_of_crashing(self):
+        clock = FakeClock()
+        q = InMemoryQueue(clock)
+        q.publish("m", "{}")
+
+        def always_down(_body):
+            raise TransientError("down")
+
+        c = ResilientConsumer(q, always_down, max_attempts=1100)
+        c.drain(clock)
+        self.assertEqual(len(c.dead_letters), 1)
+        self.assertEqual(c.dead_letters[0].message.deliveries, 1100)
+        self.assertEqual(len(q), 0)
+
     def test_replay_after_fix(self):
         clock = FakeClock()
         q = build_queue(clock, good=3)
