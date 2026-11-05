@@ -45,8 +45,10 @@ load and on frequently read, frequently changed rows.
 
 The tests cover the original interleaving, two updates during one slow read,
 out-of-order invalidations, refilling after a tombstone (the next read is a
-cache hit again), and 8 reader threads racing a writer, after which the cache
-agrees with the database.
+cache hit again), and a real reader thread that is paused (with
+`threading.Event`s) between its DB read and its cache set while the main thread
+commits an update: the naive service is left with a stale live entry, the
+versioned service is not.
 
 ## Trade-offs
 - **The tombstone TTL is the safety margin.** A reader that stalls for longer

@@ -14,6 +14,28 @@ def setup(service_cls):
     return clock, db, cache, service_cls(db, cache)
 
 
+def run_reader_paused_during_update(svc) -> None:
+    """Run get_item in a real thread and force the stale-set interleaving.
+
+    The reader thread pauses right after its DB read; the main thread then
+    commits an update, and only afterwards lets the reader call cache.set.
+    Events make this deterministic instead of hoping the scheduler races.
+    """
+    read_done = threading.Event()
+    update_done = threading.Event()
+
+    def pause_until_update() -> None:
+        read_done.set()
+        update_done.wait(timeout=5)
+
+    reader = threading.Thread(target=svc.get_item, args=("dish-42", pause_until_update))
+    reader.start()
+    read_done.wait(timeout=5)
+    svc.update_item("dish-42", "sold_out")
+    update_done.set()
+    reader.join(timeout=5)
+
+
 class ReproduceStaleSet(unittest.TestCase):
     def test_slow_reader_writes_old_status_after_update(self):
         clock, db, cache, svc = setup(NaiveMenuService)
@@ -21,6 +43,12 @@ class ReproduceStaleSet(unittest.TestCase):
         svc.get_item("dish-42", after_db_read=lambda: svc.update_item("dish-42", "sold_out"))
         self.assertEqual(db.read("dish-42")[0], "sold_out")
         self.assertEqual(svc.get_item("dish-42"), "available")   # cache now lies
+
+    def test_real_reader_thread_racing_a_writer_leaves_stale_entry(self):
+        clock, db, cache, svc = setup(NaiveMenuService)
+        run_reader_paused_during_update(svc)
+        self.assertEqual(db.read("dish-42")[0], "sold_out")
+        self.assertEqual(cache.get("dish-42").value, "available")   # stale live entry
 
     def test_stale_value_survives_for_the_whole_ttl(self):
         clock, db, cache, svc = setup(NaiveMenuService)
@@ -77,29 +105,14 @@ class VersionedFix(unittest.TestCase):
         svc.get_item("dish-42", after_db_read=update_then_stall)
         self.assertEqual(svc.get_item("dish-42"), "available")  # why tombstone_ttl must be generous
 
-    def test_concurrent_readers_and_writers_converge(self):
-        clock = FakeClock()
-        db, cache = Database(), Cache(clock)
-        db.write("k", 0)
-        svc = VersionedMenuService(db, cache)
-        barrier = threading.Barrier(9)
-
-        def reader():
-            barrier.wait()
-            for _ in range(200):
-                svc.get_item("k")
-
-        def writer():
-            barrier.wait()
-            for i in range(1, 201):
-                svc.update_item("k", i)
-        threads = [threading.Thread(target=reader) for _ in range(8)] + [threading.Thread(target=writer)]
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join()
-        self.assertEqual(svc.get_item("k"), db.read("k")[0])
-
+    def test_real_reader_thread_racing_a_writer_leaves_no_stale_entry(self):
+        clock, db, cache, svc = setup(VersionedMenuService)
+        run_reader_paused_during_update(svc)
+        entry = cache.get("dish-42")
+        current_value, current_version = db.read("dish-42")
+        if entry is not None and not entry.tombstone:
+            self.assertEqual((entry.value, entry.version), (current_value, current_version))
+        self.assertEqual(svc.get_item("dish-42"), "sold_out")
 
 if __name__ == "__main__":
     unittest.main()
