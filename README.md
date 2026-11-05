@@ -52,6 +52,7 @@ Every problem folder has the same structure:
 | 035 | [Users who deleted their account got "email already registered" when they tried to come back](problems/035-soft-delete-unique-email-resignup) |
 | 036 | [Autoscaling during a traffic spike made new API instances crash with "too many connections"](problems/036-scale-out-exceeds-db-max-connections) |
 | 037 | [Logged-out visitors saw "Hello, <someone else's name>" on the home page](problems/037-thread-local-user-context-leak) |
+| 038 | [After an NTP correction, stuck requests never timed out, then every request was cancelled at once](problems/038-wall-clock-step-breaks-request-timeouts) |
 <!-- INDEX:END -->
 
 ## Run the tests
