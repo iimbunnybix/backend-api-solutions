@@ -85,6 +85,12 @@ class PaginationTests(unittest.TestCase):
             with self.assertRaises(InvalidCursor):
                 page_keyset(conn, self.codec, 10, bad)
 
+    def test_non_ascii_cursor_is_rejected_as_invalid_not_crash(self):
+        conn = make_db()
+        for bad in ("abc.\u00e9", "\u00e9\u00e9.\u00e9"):
+            with self.assertRaises(InvalidCursor):
+                page_keyset(conn, self.codec, 10, bad)
+
     def test_cursor_from_other_key_rejected(self):
         conn = make_db()
         cur = CursorCodec(os.urandom(32)).encode(500, 50)

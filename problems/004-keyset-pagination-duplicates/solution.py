@@ -67,6 +67,10 @@ class CursorCodec:
         return f"{payload}.{self._sig(payload.encode())}"
 
     def decode(self, cursor: str) -> tuple[int, int]:
+        # Cursors we issue are pure ASCII; hmac.compare_digest raises TypeError
+        # on non-ASCII str, so reject those up front as a bad cursor (HTTP 400).
+        if not cursor.isascii():
+            raise InvalidCursor("cursor contains non-ASCII characters")
         try:
             payload, sig = cursor.rsplit(".", 1)
         except ValueError as e:
