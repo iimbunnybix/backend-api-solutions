@@ -47,6 +47,7 @@ Every problem folder has the same structure:
 | 030 | ["My orders" showed only an error for every customer who had used the new click-and-collect option](problems/030-closed-enum-new-value-client-crash) |
 | 031 | [Support console returned HTTP 500 whenever an agent selected more than a thousand customers](problems/031-sql-in-list-bind-parameter-limit) |
 | 032 | [Big merchants' "Export orders" button always ended in a 504, and every retry made the database slower](problems/032-long-export-load-balancer-timeout) |
+| 033 | [New users tapping "Continue with Google" got "Something went wrong" on their very first login](problems/033-get-or-create-signup-race) |
 <!-- INDEX:END -->
 
 ## Run the tests
