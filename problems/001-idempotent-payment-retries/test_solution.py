@@ -90,6 +90,20 @@ class IdempotencyTests(unittest.TestCase):
 
         store.execute("k", {"amount": 5}, slow_charge)
 
+    def test_mutating_a_response_does_not_change_later_replays(self):
+        store = IdempotencyStore()
+        first = store.execute("x", {"a": 1}, lambda p: {"id": 1, "meta": {"tag": "a"}})
+        first["id"] = 999
+        first["meta"]["tag"] = "changed"
+        replay = store.execute("x", {"a": 1}, lambda p: {"id": 2})
+        self.assertEqual(replay, {"id": 1, "meta": {"tag": "a"}})
+
+    def test_mutating_a_replay_does_not_change_the_next_replay(self):
+        store = IdempotencyStore()
+        store.execute("x", {"a": 1}, lambda p: {"id": 1})
+        store.execute("x", {"a": 1}, lambda p: {"id": 2})["id"] = 999
+        self.assertEqual(store.execute("x", {"a": 1}, lambda p: {"id": 3}), {"id": 1})
+
 
 if __name__ == "__main__":
     unittest.main()

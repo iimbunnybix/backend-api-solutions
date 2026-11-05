@@ -1,6 +1,7 @@
 """Idempotency-key middleware for a payment endpoint."""
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import threading
@@ -57,7 +58,8 @@ class IdempotencyStore:
                     raise IdempotencyKeyReuse(key)
                 if entry.status == "IN_PROGRESS":
                     raise IdempotencyConflict(key)
-                return entry.response                      # replay stored result
+                # Return a copy so callers can't change what future retries receive.
+                return copy.deepcopy(entry.response)       # replay stored result
             self._entries[key] = _Entry(fp, "IN_PROGRESS", created_at=self._clock())
 
         try:
@@ -69,7 +71,9 @@ class IdempotencyStore:
 
         with self._lock:
             # TTL counts from completion, so a slow charge still gets the full window.
-            self._entries[key] = _Entry(fp, "DONE", response, created_at=self._clock())
+            # Store a private copy: the caller may mutate the dict we return.
+            stored = copy.deepcopy(response)
+            self._entries[key] = _Entry(fp, "DONE", stored, created_at=self._clock())
         return response
 
 
