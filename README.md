@@ -40,6 +40,7 @@ Every problem folder has the same structure:
 | 023 | [Database CPU spikes to 100% exactly five minutes after every deploy, then again every five minutes](problems/023-synchronized-cache-expiry-ttl-jitter) |
 | 024 | [Users who changed only their display name in the app found their phone number and bio erased](problems/024-partial-update-null-vs-missing) |
 | 025 | [Support agents searching for "_" got every customer in the database, and "bob_smith" also returned "bobXsmith"](problems/025-like-wildcard-search-escaping) |
+| 026 | [Push notifications from customers with Hindi names or emoji in their message silently stopped arriving](problems/026-utf8-byte-truncation-split-characters) |
 <!-- INDEX:END -->
 
 ## Run the tests
