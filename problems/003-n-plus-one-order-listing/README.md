@@ -36,6 +36,10 @@ parameter limit; 300 orders with `chunk=100` costs 5 queries. Tests also
 prove the batched response is identical to the naive one,
 preserves page order, and returns `items: []` for orders with no items.
 
+`limit` comes from the query string, so it is validated to 1..`MAX_PAGE_SIZE`
+(500) before it reaches SQL: SQLite treats a negative `LIMIT` as "no limit",
+which would otherwise turn `?limit=-1` into a full-table dump.
+
 ## Trade-offs
 - A single `JOIN` (orders ⨝ customers ⨝ items) is also 1 query, but it
   duplicates order/customer columns once per item row and makes `LIMIT`

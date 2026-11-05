@@ -20,6 +20,10 @@ from typing import Iterable, Sequence
 # on newer ones; Postgres allows 65535 bind params. Chunking keeps IN lists bounded.
 MAX_IN_PARAMS = 500
 
+# Largest page a client may request. ``limit`` comes from the query string, and
+# SQLite treats a negative LIMIT as "no limit", so it must be validated.
+MAX_PAGE_SIZE = 500
+
 
 class QueryCounter:
     """Thin wrapper around a sqlite3 connection that counts executed statements."""
@@ -46,7 +50,14 @@ def create_schema(conn: sqlite3.Connection) -> None:
     )
 
 
+def validate_limit(limit: int) -> None:
+    """Reject page sizes outside 1..MAX_PAGE_SIZE before they reach SQL."""
+    if limit < 1 or limit > MAX_PAGE_SIZE:
+        raise ValueError(f"limit must be between 1 and {MAX_PAGE_SIZE}, got {limit}")
+
+
 def _page_of_orders(db: QueryCounter, limit: int) -> list[tuple]:
+    validate_limit(limit)
     return db.execute(
         "SELECT id, customer_id, total_cents, created_at FROM orders "
         "ORDER BY created_at DESC, id DESC LIMIT ?", (limit,))
@@ -76,6 +87,8 @@ def _chunks(ids: Sequence[int], size: int) -> Iterable[Sequence[int]]:
 def load_many(db: QueryCounter, sql_template: str, ids: Iterable[int],
               chunk: int = MAX_IN_PARAMS) -> list[tuple]:
     """Run ``sql_template`` (containing ``{in}``) for distinct ids in bounded IN-chunks."""
+    if chunk < 1:
+        raise ValueError(f"chunk must be at least 1, got {chunk}")
     unique = sorted(set(ids))
     rows: list[tuple] = []
     for part in _chunks(unique, chunk):

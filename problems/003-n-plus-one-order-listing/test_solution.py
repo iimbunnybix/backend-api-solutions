@@ -2,7 +2,8 @@ import random
 import sqlite3
 import unittest
 
-from solution import QueryCounter, create_schema, list_orders_batched, list_orders_naive
+from solution import (MAX_PAGE_SIZE, QueryCounter, create_schema, list_orders_batched,
+                      list_orders_naive)
 
 
 def seeded_db(n_customers=40, n_orders=300, seed=7):
@@ -72,6 +73,34 @@ class NPlusOneTests(unittest.TestCase):
     def test_page_order_preserved(self):
         rows = list_orders_batched(QueryCounter(self.conn), limit=20)
         self.assertEqual([r["id"] for r in rows], list(range(300, 280, -1)))
+
+
+class PageSizeValidationTests(unittest.TestCase):
+    """SQLite treats a negative LIMIT as "no limit", so bad input must be rejected."""
+
+    def setUp(self):
+        self.conn = seeded_db()
+
+    def test_negative_limit_is_rejected_instead_of_returning_whole_table(self):
+        for list_orders in (list_orders_batched, list_orders_naive):
+            with self.assertRaises(ValueError):
+                list_orders(QueryCounter(self.conn), limit=-1)
+
+    def test_zero_limit_is_rejected(self):
+        with self.assertRaises(ValueError):
+            list_orders_batched(QueryCounter(self.conn), limit=0)
+
+    def test_limit_above_max_page_size_is_rejected(self):
+        with self.assertRaises(ValueError):
+            list_orders_batched(QueryCounter(self.conn), limit=MAX_PAGE_SIZE + 1)
+
+    def test_limit_equal_to_max_page_size_is_allowed(self):
+        rows = list_orders_batched(QueryCounter(self.conn), limit=MAX_PAGE_SIZE)
+        self.assertEqual(len(rows), 300)
+
+    def test_zero_chunk_size_is_rejected(self):
+        with self.assertRaises(ValueError):
+            list_orders_batched(QueryCounter(self.conn), limit=10, chunk=0)
 
 
 if __name__ == "__main__":
