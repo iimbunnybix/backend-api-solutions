@@ -33,6 +33,7 @@ Every problem folder has the same structure:
 | 016 | [Primary database CPU spiked during a scrape of product IDs that don't exist](problems/016-negative-caching-missing-keys) |
 | 017 | [Merchants re-uploaded the same 1,000-row product file a dozen times because one bad row rejected all of it](problems/017-bulk-import-all-or-nothing-rollback) |
 | 018 | [API workers were OOM-killed one after another when a customer's script uploaded a huge file to a JSON endpoint](problems/018-unbounded-request-body-oom) |
+| 019 | [Shoppers on one store saw another store's prices after a "harmless" response-caching release](problems/019-response-cache-key-missing-tenant) |
 <!-- INDEX:END -->
 
 ## Run the tests
