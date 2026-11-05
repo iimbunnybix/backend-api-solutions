@@ -111,6 +111,16 @@ class CircuitBreaker:
             self.short_circuited += 1
             raise CircuitOpenError(f"circuit {self._state.value}")
 
+    def _release_probe(self) -> None:
+        """Free a probe slot without recording an outcome.
+
+        Used when a probe is interrupted by a BaseException (cancellation,
+        gevent.Timeout, shutdown): we learned nothing about the dependency,
+        but the slot must be returned or the breaker can never close again.
+        """
+        with self._lock:
+            self._probes_in_flight -= 1
+
     def _record(self, failed: bool, probe: bool) -> None:
         with self._lock:
             if probe:
@@ -152,6 +162,12 @@ class CircuitBreaker:
             self._record(True, probe)
             if fallback is not None:
                 return fallback()
+            raise
+        except BaseException:
+            # Not an Exception (e.g. cancellation): give the probe slot back
+            # so every successful _acquire() is paired with a release.
+            if probe:
+                self._release_probe()
             raise
         slow = self._clock() - start > self.slow_call_seconds
         self._record(slow, probe)

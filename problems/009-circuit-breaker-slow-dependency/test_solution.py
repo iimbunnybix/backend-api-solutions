@@ -134,6 +134,26 @@ class Recovery(unittest.TestCase):
         with self.assertRaises(CircuitOpenError):
             cb._acquire()
 
+    def test_probes_interrupted_by_base_exception_release_their_slots(self):
+        clock, recs, cb = self._open()
+        clock.advance(30.0)
+
+        class Cancelled(BaseException):
+            """Stands in for asyncio.CancelledError / gevent.Timeout."""
+
+        def cancelled_call():
+            raise Cancelled()
+
+        for _ in range(3):
+            with self.assertRaises(Cancelled):
+                cb.call(cancelled_call, fallback=FALLBACK)
+        recs.down = False
+        calls_before = recs.calls
+        for _ in range(3):
+            self.assertEqual(cb.call(recs, fallback=FALLBACK), ["sku-1", "sku-2", "sku-3"])
+        self.assertEqual(recs.calls, calls_before + 3)
+        self.assertEqual(cb.state, State.CLOSED)
+
     def test_invalid_config(self):
         with self.assertRaises(ValueError):
             CircuitBreaker(failure_rate_threshold=0)

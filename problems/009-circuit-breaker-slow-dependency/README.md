@@ -40,6 +40,9 @@ A **circuit breaker** around the recommendations call (`CircuitBreaker` in
   touching the network, for 30 s.
 - **Half-open:** after the cool-down, at most 3 concurrent probe calls go
   through. If all succeed the breaker closes; one failure opens it again.
+  A probe interrupted by a non-`Exception` (cancellation, `gevent.Timeout`,
+  shutdown) gives its slot back without counting as a result, so the breaker
+  can still close.
 
 In the same 1,000-request outage, only the first 10 calls reach the hanging
 service (30 worker-seconds instead of 3,000) and the other 990 are
