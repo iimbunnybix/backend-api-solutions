@@ -43,6 +43,7 @@ Every problem folder has the same structure:
 | 026 | [Push notifications from customers with Hindi names or emoji in their message silently stopped arriving](problems/026-utf8-byte-truncation-split-characters) |
 | 027 | [Ops dashboard users switched the order filter mid-scroll and orders silently went missing from the list](problems/027-pagination-cursor-not-bound-to-filters) |
 | 028 | [After one member checked out, every shopper saw the member price, and it dropped further with each new member](problems/028-shared-cache-object-mutation) |
+| 029 | [Every API endpoint returned "connection pool exhausted" whenever the payment provider got slow](problems/029-transaction-held-across-payment-call) |
 <!-- INDEX:END -->
 
 ## Run the tests
