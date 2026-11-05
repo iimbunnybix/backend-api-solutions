@@ -45,6 +45,7 @@ Every problem folder has the same structure:
 | 028 | [After one member checked out, every shopper saw the member price, and it dropped further with each new member](problems/028-shared-cache-object-mutation) |
 | 029 | [Every API endpoint returned "connection pool exhausted" whenever the payment provider got slow](problems/029-transaction-held-across-payment-call) |
 | 030 | ["My orders" showed only an error for every customer who had used the new click-and-collect option](problems/030-closed-enum-new-value-client-crash) |
+| 031 | [Support console returned HTTP 500 whenever an agent selected more than a thousand customers](problems/031-sql-in-list-bind-parameter-limit) |
 <!-- INDEX:END -->
 
 ## Run the tests
