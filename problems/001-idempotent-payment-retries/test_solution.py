@@ -65,6 +65,31 @@ class IdempotencyTests(unittest.TestCase):
         svc.create_payment("k", {"amount": 1})
         self.assertEqual(len(svc.charges), 2)
 
+    def test_slow_charge_outliving_ttl_still_completes(self):
+        now = [0.0]
+        store = IdempotencyStore(ttl_seconds=10, clock=lambda: now[0])
+
+        def slow_charge(payload):
+            now[0] += 11  # the charge takes longer than the TTL
+            # Another request arrives meanwhile and triggers a purge.
+            store.execute("other", {"a": 1}, lambda p: {"ok": 1})
+            return {"charged": True}
+
+        self.assertEqual(store.execute("k", {"amount": 5}, slow_charge), {"charged": True})
+
+    def test_in_progress_key_is_not_purged_by_ttl(self):
+        now = [0.0]
+        store = IdempotencyStore(ttl_seconds=10, clock=lambda: now[0])
+
+        def slow_charge(payload):
+            now[0] += 11
+            # A retry with the same key during the charge must still be rejected.
+            with self.assertRaises(IdempotencyConflict):
+                store.execute("k", {"amount": 5}, lambda p: {"charged": "twice"})
+            return {"charged": True}
+
+        store.execute("k", {"amount": 5}, slow_charge)
+
 
 if __name__ == "__main__":
     unittest.main()

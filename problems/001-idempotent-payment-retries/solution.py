@@ -39,7 +39,11 @@ class IdempotencyStore:
 
     def _purge_expired(self) -> None:
         now = self._clock()
-        expired = [k for k, e in self._entries.items() if now - e.created_at > self._ttl]
+        # Only finished entries may expire: purging an IN_PROGRESS key would let a
+        # concurrent retry charge again and break the completion step below.
+        # For DONE entries created_at is reset to the completion time.
+        expired = [k for k, e in self._entries.items()
+                   if e.status == "DONE" and now - e.created_at > self._ttl]
         for k in expired:
             del self._entries[k]
 
@@ -64,8 +68,8 @@ class IdempotencyStore:
             raise
 
         with self._lock:
-            e = self._entries[key]
-            e.status, e.response = "DONE", response
+            # TTL counts from completion, so a slow charge still gets the full window.
+            self._entries[key] = _Entry(fp, "DONE", response, created_at=self._clock())
         return response
 
 
