@@ -188,13 +188,15 @@ def replay_dead_letters(dead_letters: list, queue: InMemoryQueue,
 
     ``fix`` returns the corrected body, or None to leave the letter parked.
     """
-    remaining, replayed = [], 0
-    for letter in dead_letters:
+    replayed = 0
+    # Iterate over a copy and remove each letter right after publishing it:
+    # if ``fix`` raises halfway, the DLQ still holds exactly the letters that
+    # were NOT republished, so a re-run cannot publish any letter twice.
+    for letter in list(dead_letters):
         body = fix(letter.message.body)
         if body is None:
-            remaining.append(letter)
             continue
         queue.publish(letter.message.id, body)
+        dead_letters.remove(letter)
         replayed += 1
-    dead_letters[:] = remaining
     return replayed

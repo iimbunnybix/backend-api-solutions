@@ -122,6 +122,28 @@ class DeadLetterFix(unittest.TestCase):
         c.drain(clock)
         self.assertIn(42, processed)
 
+    def test_failed_replay_removes_only_already_republished_letters(self):
+        clock = FakeClock()
+        q = InMemoryQueue(clock)
+        q.publish("a", '{"order_id": 1,')
+        q.publish("b", '{"order_id": 2,')
+        processed = []
+        c = ResilientConsumer(q, lambda b: handle_order_event(b, processed))
+        c.drain(clock)
+
+        def buggy_fix(body):
+            if "2" in body:
+                raise ValueError("fix script bug")
+            return body + ' "x": 1}'
+
+        with self.assertRaises(ValueError):
+            replay_dead_letters(c.dead_letters, q, buggy_fix)
+        self.assertEqual([d.message.id for d in c.dead_letters], ["b"])
+
+        replay_dead_letters(c.dead_letters, q, lambda body: body + ' "x": 1}')
+        c.drain(clock)
+        self.assertEqual(processed, [1, 2])                 # order 1 handled once
+
     def test_missing_field_is_permanent(self):
         with self.assertRaisesRegex(Exception, "missing order_id"):
             handle_order_event('{"id": 1}', [])
