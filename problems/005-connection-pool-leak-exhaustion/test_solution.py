@@ -1,7 +1,7 @@
 import threading
 import unittest
 
-from solution import ConnectionPool, PoolTimeout, fixed_handler, leaky_handler
+from solution import ConnectionPool, FakeConnection, PoolTimeout, fixed_handler, leaky_handler
 
 
 class FakeClock:
@@ -130,6 +130,42 @@ class TimeoutsAndLeakDetection(unittest.TestCase):
     def test_invalid_size(self):
         with self.assertRaises(ValueError):
             ConnectionPool(max_size=0)
+
+
+class FlakyFactory:
+    """Connection factory that fails while ``down`` is True (a DB restart)."""
+
+    def __init__(self) -> None:
+        self.down = True
+
+    def __call__(self) -> FakeConnection:
+        if self.down:
+            raise ConnectionError("database is restarting")
+        return FakeConnection()
+
+
+class FailedConnectsDoNotLeakSlots(unittest.TestCase):
+    def test_pool_recovers_after_max_size_failed_connects(self):
+        factory = FlakyFactory()
+        pool = ConnectionPool(factory=factory, max_size=2, acquire_timeout_s=0.05)
+        for _ in range(2):
+            with self.assertRaises(ConnectionError):
+                pool.acquire()
+        factory.down = False
+        conn = pool.acquire()
+        self.assertFalse(conn.closed)
+        self.assertEqual(pool.in_use(), 1)
+
+    def test_pool_can_still_fill_to_max_size_after_failures(self):
+        factory = FlakyFactory()
+        pool = ConnectionPool(factory=factory, max_size=2, acquire_timeout_s=0.05)
+        with self.assertRaises(ConnectionError):
+            pool.acquire()
+        factory.down = False
+        pool.acquire()
+        pool.acquire()
+        with self.assertRaises(PoolTimeout):
+            pool.acquire()
 
 
 if __name__ == "__main__":

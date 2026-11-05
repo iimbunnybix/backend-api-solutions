@@ -102,8 +102,7 @@ class ConnectionPool:
                 if self._idle:
                     conn = self._idle.pop()
                 elif self._created < self._max:
-                    self._created += 1
-                    conn = self._factory()
+                    conn = self._create_connection()
                 if conn is not None:
                     self._out[conn.id] = _Checkout(
                         conn, self._clock(), "".join(traceback.format_stack(limit=8)[:-1])
@@ -118,6 +117,21 @@ class ConnectionPool:
                         f"({len(self._out)}/{self._max} checked out)"
                     )
                 self._cv.wait(remaining)
+
+    def _create_connection(self) -> FakeConnection:
+        """Reserve a slot and open a connection; give the slot back on failure.
+
+        Must be called with ``self._cv`` held. Without the rollback a failed
+        connect (database restarting, DNS error) would eat a slot forever and
+        a short outage would leave the pool "full" with zero connections.
+        """
+        self._created += 1
+        try:
+            return self._factory()
+        except BaseException:
+            self._created -= 1
+            self._cv.notify()
+            raise
 
     def release(self, conn: FakeConnection, *, discard: bool = False) -> None:
         """Return ``conn``; ``discard=True`` closes it and frees its slot."""
