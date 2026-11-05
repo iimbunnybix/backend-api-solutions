@@ -37,6 +37,7 @@ Every problem folder has the same structure:
 | 020 | [Support found customers with two accounts, and a user registered "Admin" right next to "admin"](problems/020-case-unicode-duplicate-accounts) |
 | 021 | [Customers clicking an order in the web app saw someone else's order, but the mobile app was fine](problems/021-json-large-id-precision-loss) |
 | 022 | [Patients in India arrived five and a half hours early for video consultations booked through the app](problems/022-naive-datetime-timezone-shift) |
+| 023 | [Database CPU spikes to 100% exactly five minutes after every deploy, then again every five minutes](problems/023-synchronized-cache-expiry-ttl-jitter) |
 <!-- INDEX:END -->
 
 ## Run the tests
