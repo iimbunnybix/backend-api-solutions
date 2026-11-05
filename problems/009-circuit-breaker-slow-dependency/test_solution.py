@@ -160,6 +160,12 @@ class Recovery(unittest.TestCase):
         with self.assertRaises(ValueError):
             CircuitBreaker(window_size=5, min_calls=10)
 
+    def test_zero_or_negative_sizes_are_rejected(self):
+        for bad in (dict(half_open_max_calls=0), dict(min_calls=0),
+                    dict(window_size=0, min_calls=0), dict(half_open_max_calls=-1)):
+            with self.subTest(**bad), self.assertRaises(ValueError):
+                CircuitBreaker(**bad)
+
 
 if __name__ == "__main__":
     unittest.main()

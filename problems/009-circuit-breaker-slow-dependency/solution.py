@@ -64,6 +64,10 @@ class CircuitBreaker:
                  clock: Callable[[], float] = time.monotonic) -> None:
         if not 0 < failure_rate_threshold <= 1:
             raise ValueError("failure_rate_threshold must be in (0, 1]")
+        # A zero here would leave the breaker stuck: half_open_max_calls=0
+        # admits no probe, so it could never leave HALF_OPEN.
+        if window_size < 1 or min_calls < 1 or half_open_max_calls < 1:
+            raise ValueError("window_size, min_calls and half_open_max_calls must be >= 1")
         if min_calls > window_size:
             raise ValueError("min_calls cannot exceed window_size")
         self.window_size = window_size
