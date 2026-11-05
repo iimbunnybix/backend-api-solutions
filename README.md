@@ -42,6 +42,7 @@ Every problem folder has the same structure:
 | 025 | [Support agents searching for "_" got every customer in the database, and "bob_smith" also returned "bobXsmith"](problems/025-like-wildcard-search-escaping) |
 | 026 | [Push notifications from customers with Hindi names or emoji in their message silently stopped arriving](problems/026-utf8-byte-truncation-split-characters) |
 | 027 | [Ops dashboard users switched the order filter mid-scroll and orders silently went missing from the list](problems/027-pagination-cursor-not-bound-to-filters) |
+| 028 | [After one member checked out, every shopper saw the member price, and it dropped further with each new member](problems/028-shared-cache-object-mutation) |
 <!-- INDEX:END -->
 
 ## Run the tests
