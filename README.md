@@ -30,6 +30,7 @@ Every problem folder has the same structure:
 | 013 | [Wallet transfers failed with "deadlock detected" every evening, and the support queue filled with "my money is stuck" tickets](problems/013-transfer-deadlock-lock-ordering) |
 | 014 | [Older Android app versions crashed on the order screen right after a backend release that "only renamed a field"](problems/014-breaking-change-api-versioning) |
 | 015 | [Checkout returned 503 for most shoppers because the optional recommendations service got slow](problems/015-bulkhead-shared-worker-pool) |
+| 016 | [Primary database CPU spiked during a scrape of product IDs that don't exist](problems/016-negative-caching-missing-keys) |
 <!-- INDEX:END -->
 
 ## Run the tests
