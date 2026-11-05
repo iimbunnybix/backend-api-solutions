@@ -39,6 +39,7 @@ Every problem folder has the same structure:
 | 022 | [Patients in India arrived five and a half hours early for video consultations booked through the app](problems/022-naive-datetime-timezone-shift) |
 | 023 | [Database CPU spikes to 100% exactly five minutes after every deploy, then again every five minutes](problems/023-synchronized-cache-expiry-ttl-jitter) |
 | 024 | [Users who changed only their display name in the app found their phone number and bio erased](problems/024-partial-update-null-vs-missing) |
+| 025 | [Support agents searching for "_" got every customer in the database, and "bob_smith" also returned "bobXsmith"](problems/025-like-wildcard-search-escaping) |
 <!-- INDEX:END -->
 
 ## Run the tests
