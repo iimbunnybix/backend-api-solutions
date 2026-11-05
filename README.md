@@ -34,6 +34,7 @@ Every problem folder has the same structure:
 | 017 | [Merchants re-uploaded the same 1,000-row product file a dozen times because one bad row rejected all of it](problems/017-bulk-import-all-or-nothing-rollback) |
 | 018 | [API workers were OOM-killed one after another when a customer's script uploaded a huge file to a JSON endpoint](problems/018-unbounded-request-body-oom) |
 | 019 | [Shoppers on one store saw another store's prices after a "harmless" response-caching release](problems/019-response-cache-key-missing-tenant) |
+| 020 | [Support found customers with two accounts, and a user registered "Admin" right next to "admin"](problems/020-case-unicode-duplicate-accounts) |
 <!-- INDEX:END -->
 
 ## Run the tests
