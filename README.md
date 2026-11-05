@@ -32,6 +32,7 @@ Every problem folder has the same structure:
 | 015 | [Checkout returned 503 for most shoppers because the optional recommendations service got slow](problems/015-bulkhead-shared-worker-pool) |
 | 016 | [Primary database CPU spiked during a scrape of product IDs that don't exist](problems/016-negative-caching-missing-keys) |
 | 017 | [Merchants re-uploaded the same 1,000-row product file a dozen times because one bad row rejected all of it](problems/017-bulk-import-all-or-nothing-rollback) |
+| 018 | [API workers were OOM-killed one after another when a customer's script uploaded a huge file to a JSON endpoint](problems/018-unbounded-request-body-oom) |
 <!-- INDEX:END -->
 
 ## Run the tests
