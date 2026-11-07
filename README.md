@@ -54,6 +54,7 @@ Every problem folder has the same structure:
 | 037 | [Logged-out visitors saw "Hello, <someone else's name>" on the home page](problems/037-thread-local-user-context-leak) |
 | 038 | [After an NTP correction, stuck requests never timed out, then every request was cancelled at once](problems/038-wall-clock-step-breaks-request-timeouts) |
 | 039 | [Product pages were re-downloaded in full on every visit even though nothing had changed](problems/039-nondeterministic-etag-cache-misses) |
+| 040 | [Uploaded contracts showed up as empty 0-byte files after a network blip, with a 201 to the client](problems/040-retry-resends-consumed-body-stream) |
 <!-- INDEX:END -->
 
 ## Run the tests
