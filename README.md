@@ -53,6 +53,7 @@ Every problem folder has the same structure:
 | 036 | [Autoscaling during a traffic spike made new API instances crash with "too many connections"](problems/036-scale-out-exceeds-db-max-connections) |
 | 037 | [Logged-out visitors saw "Hello, <someone else's name>" on the home page](problems/037-thread-local-user-context-leak) |
 | 038 | [After an NTP correction, stuck requests never timed out, then every request was cancelled at once](problems/038-wall-clock-step-breaks-request-timeouts) |
+| 039 | [Product pages were re-downloaded in full on every visit even though nothing had changed](problems/039-nondeterministic-etag-cache-misses) |
 <!-- INDEX:END -->
 
 ## Run the tests
