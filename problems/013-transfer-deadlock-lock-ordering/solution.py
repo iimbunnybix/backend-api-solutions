@@ -60,8 +60,19 @@ def _apply_transfer(db: dict, src: Key, dst: Key, amount: int) -> dict:
     return {src: db[src] - amount, dst: db[dst] + amount}
 
 
+def _validate_amount(amount: int) -> None:
+    """Reject a non-positive amount up front.
+
+    Checking it inside the transaction would raise after locks are held,
+    and the error would escape Scheduler.run and abort the whole batch.
+    """
+    if amount <= 0:
+        raise ValueError("amount must be positive")
+
+
 def naive_transfer(src: Key, dst: Key, amount: int) -> TxnFactory:
     """The original code: lock source, then destination."""
+    _validate_amount(amount)
     def txn(db: dict) -> TxnGen:
         yield Lock(src)
         yield Lock(dst)
@@ -73,6 +84,7 @@ def ordered_transfer(src: Key, dst: Key, amount: int) -> TxnFactory:
     """The fix: lock both rows in ascending key order, then apply."""
     if src == dst:
         raise ValueError("cannot transfer to the same account")
+    _validate_amount(amount)
 
     def txn(db: dict) -> TxnGen:
         for req in lock_in_order([src, dst]):

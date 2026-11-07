@@ -76,6 +76,22 @@ class OrderedLocking(unittest.TestCase):
         with self.assertRaises(ValueError):
             ordered_transfer(1, 1, 5)
 
+    def test_zero_amount_rejected_before_any_lock_is_taken(self):
+        with self.assertRaises(ValueError):
+            ordered_transfer("A", "B", 0)
+
+    def test_negative_amount_rejected_before_any_lock_is_taken(self):
+        with self.assertRaises(ValueError):
+            ordered_transfer("A", "B", -5)
+
+    def test_batch_with_invalid_amount_cannot_strand_valid_transfers(self):
+        db = {"A": 100, "B": 100, "C": 100}
+        with self.assertRaises(ValueError):
+            Scheduler(db).run([ordered_transfer("A", "B", 10),
+                               ordered_transfer("B", "C", 0)])
+        # Rejected at construction, so no transaction ever started.
+        self.assertEqual(db, {"A": 100, "B": 100, "C": 100})
+
 
 class RetryAndEdgeCases(unittest.TestCase):
     def test_retry_hides_deadlocks_but_they_still_happen(self):
