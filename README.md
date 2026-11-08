@@ -55,6 +55,7 @@ Every problem folder has the same structure:
 | 038 | [After an NTP correction, stuck requests never timed out, then every request was cancelled at once](problems/038-wall-clock-step-breaks-request-timeouts) |
 | 039 | [Product pages were re-downloaded in full on every visit even though nothing had changed](problems/039-nondeterministic-etag-cache-misses) |
 | 040 | [Uploaded contracts showed up as empty 0-byte files after a network blip, with a 201 to the client](problems/040-retry-resends-consumed-body-stream) |
+| 041 | [After a routine database failover, the API kept returning "server closed the connection unexpectedly" until every pod was restarted](problems/041-stale-pool-connections-after-db-failover) |
 <!-- INDEX:END -->
 
 ## Run the tests
