@@ -44,7 +44,8 @@ model Stripe describes for its own API:
 
 The tests reproduce the crash with a strict "old Android client" parser, then
 show the same parser working against the versioned API, plus the intermediate
-versions, request upgrades, pinning, 400s for bad versions, and that
+versions, request upgrades (exact cents, negative amounts), pinning, 400s for
+bad versions and malformed or sub-cent prices, and that
 downgrading never mutates the source object.
 
 ## Trade-offs

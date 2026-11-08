@@ -20,6 +20,7 @@ code free of ``if version < ...`` branches: handlers only know the latest shape.
 from __future__ import annotations
 
 import copy
+import re
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -30,6 +31,10 @@ Body = dict
 
 class UnsupportedVersion(ValueError):
     """Unknown or malformed ``Api-Version`` (return 400 to the client)."""
+
+
+class InvalidRequest(ValueError):
+    """A request body field that cannot be upgraded (return 400 to the client)."""
 
 
 @dataclass(frozen=True)
@@ -101,7 +106,11 @@ class VersionedAPI:
             version = self.resolve(header, pinned)
         except UnsupportedVersion as e:
             return 400, {}, {"error": str(e)}
-        latest_in = self.parse_request(body or {}, version)
+        try:
+            latest_in = self.parse_request(body or {}, version)
+        except InvalidRequest as e:
+            # Bad client input must be a 400, not an uncaught 500.
+            return 400, {}, {"error": str(e)}
         return 200, self.response_headers(version), self.render(handler(latest_in), version)
 
 
@@ -125,14 +134,19 @@ def _cents_to_price(cents: int) -> str:
     return f"{sign}{whole}.{frac:02d}"
 
 
-def _price_to_cents(price: str) -> int:
+# Optional sign, whole units, then at most two decimal places ("12.5", "-1.50").
+PRICE_PATTERN = re.compile(r"-?\d+(\.\d{1,2})?")
+
+
+def _price_to_cents(price: object) -> int:
     """Parse the old "12.50" string exactly into integer cents."""
-    value = Decimal(price)
     # A sub-cent price cannot be stored in cents; truncating it would silently
-    # undercharge, so refuse it instead.
-    if value.as_tuple().exponent < -2:
-        raise ValueError(f"price {price!r} has more than two decimal places")
-    return int(value * 100)
+    # undercharge, so it is rejected along with any other malformed value.
+    if not isinstance(price, str) or not PRICE_PATTERN.fullmatch(price):
+        raise InvalidRequest(
+            f"invalid price {price!r}: expected a string like \"12.50\" "
+            "with at most two decimal places")
+    return int(Decimal(price) * 100)
 
 
 def _split_money_up(req: Body) -> Body:

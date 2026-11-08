@@ -1,7 +1,7 @@
 import unittest
 
-from solution import (OLD_STATUSES, ORDER_API, UnsupportedVersion, VersionChange,
-                      VersionedAPI)
+from solution import (OLD_STATUSES, ORDER_API, InvalidRequest, UnsupportedVersion,
+                      VersionChange, VersionedAPI)
 
 LATEST_ORDER = {
     "id": "ord_1",
@@ -112,6 +112,17 @@ class Versioning(unittest.TestCase):
             cents = ORDER_API.parse_request({"price": price}, "2025-11-01")["amount"]
             order = dict(LATEST_ORDER, amount=cents)
             self.assertEqual(ORDER_API.render(order, "2025-11-01")["price"], price)
+
+    def test_malformed_price_from_old_client_is_400_not_crash(self):
+        for bad in [".50", "12,50", "12.5.0", "abc", "12.999", "", 12.5, None]:
+            status, _, body = ORDER_API.handle(get_order, {"price": bad}, None,
+                                               pinned="2025-11-01")
+            self.assertEqual(status, 400, bad)
+            self.assertIn("invalid price", body["error"])
+
+    def test_malformed_price_raises_invalid_request(self):
+        with self.assertRaises(InvalidRequest):
+            ORDER_API.parse_request({"price": "abc"}, "2025-11-01")
 
     def test_non_usd_cannot_be_downgraded(self):
         order = dict(LATEST_ORDER, amount={"value": 100, "currency": "EUR"})
