@@ -22,6 +22,7 @@ from __future__ import annotations
 import copy
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 from typing import Callable
 
 Body = dict
@@ -111,15 +112,32 @@ def _split_money_down(order: Body) -> Body:
     if amount["currency"] != "USD":
         # The old shape had no currency: old clients only ever saw USD orders.
         raise ValueError("non-USD order cannot be represented before 2026-03-01")
-    cents = amount["value"]
-    order["price"] = f"{cents // 100}.{cents % 100:02d}"
+    order["price"] = _cents_to_price(amount["value"])
     return order
+
+
+def _cents_to_price(cents: int) -> str:
+    """Format integer cents as the old "12.50" string, sign first."""
+    # Work on abs(): floor division of a negative number rounds toward minus
+    # infinity, so -150 // 100 == -2 and -150 % 100 == 50 would give "-2.50".
+    sign = "-" if cents < 0 else ""
+    whole, frac = divmod(abs(cents), 100)
+    return f"{sign}{whole}.{frac:02d}"
+
+
+def _price_to_cents(price: str) -> int:
+    """Parse the old "12.50" string exactly into integer cents."""
+    value = Decimal(price)
+    # A sub-cent price cannot be stored in cents; truncating it would silently
+    # undercharge, so refuse it instead.
+    if value.as_tuple().exponent < -2:
+        raise ValueError(f"price {price!r} has more than two decimal places")
+    return int(value * 100)
 
 
 def _split_money_up(req: Body) -> Body:
     if "price" in req:
-        whole, _, frac = req.pop("price").partition(".")
-        req["amount"] = {"value": int(whole) * 100 + int((frac + "00")[:2]), "currency": "USD"}
+        req["amount"] = {"value": _price_to_cents(req.pop("price")), "currency": "USD"}
     return req
 
 

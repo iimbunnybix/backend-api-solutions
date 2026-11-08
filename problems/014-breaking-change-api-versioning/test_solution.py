@@ -94,6 +94,25 @@ class Versioning(unittest.TestCase):
         order = dict(LATEST_ORDER, amount={"value": 5, "currency": "USD"})
         self.assertEqual(ORDER_API.render(order, "2025-11-01")["price"], "0.05")
 
+    def test_negative_cents_are_formatted_with_the_sign_first(self):
+        for cents, price in [(-150, "-1.50"), (-5, "-0.05"), (-100, "-1.00")]:
+            order = dict(LATEST_ORDER, amount={"value": cents, "currency": "USD"})
+            self.assertEqual(ORDER_API.render(order, "2025-11-01")["price"], price)
+
+    def test_negative_price_is_upgraded_to_negative_cents(self):
+        upgraded = ORDER_API.parse_request({"price": "-1.50"}, "2025-11-01")
+        self.assertEqual(upgraded["amount"]["value"], -150)
+
+    def test_sub_cent_price_is_rejected_not_truncated(self):
+        with self.assertRaises(ValueError):
+            ORDER_API.parse_request({"price": "12.999"}, "2025-11-01")
+
+    def test_price_round_trips_through_cents(self):
+        for price in ["0.05", "12.50", "-1.50", "-0.05", "100.00"]:
+            cents = ORDER_API.parse_request({"price": price}, "2025-11-01")["amount"]
+            order = dict(LATEST_ORDER, amount=cents)
+            self.assertEqual(ORDER_API.render(order, "2025-11-01")["price"], price)
+
     def test_non_usd_cannot_be_downgraded(self):
         order = dict(LATEST_ORDER, amount={"value": 100, "currency": "EUR"})
         with self.assertRaises(ValueError):
