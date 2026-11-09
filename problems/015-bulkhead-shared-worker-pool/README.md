@@ -20,14 +20,22 @@ breaker trips, the shared pool is already exhausted.
 ## Solution
 Add a **bulkhead** per risky dependency: a counter of in-flight calls with a
 hard limit (8 of the 40 workers for recommendations here). A request first
-checks its compartment; if the compartment is full it is rejected immediately
-(`rejected_bulkhead_full`) and never takes a shared worker. Dependencies without
-a limit share the remaining pool as before.
+checks its compartment; if the compartment is full the dependency call is
+skipped and never ties up a shared worker for 30 s:
+- for an *optional* dependency (listed in `fallback_seconds`) the request is
+  still served without it, holding a worker only for its own short work
+  (50 ms here) and returning `accepted_without_dependency`;
+- for a *required* dependency it is rejected immediately
+  (`rejected_bulkhead_full`) so the caller can fail fast.
 
-With the same traffic, payments get **600 of 600** accepted, and
-recommendations are capped at the 16 calls that fit in its 8-slot compartment
-over the minute — the page simply renders without recommendations.
-When recommendations are healthy, both servers accept everything (300 and 600).
+Dependencies without a limit share the remaining pool as before.
+
+With the same traffic and recommendations marked optional, payments get
+**600 of 600** accepted, and all 300 page requests are served: 16 with
+recommendations (what fits in the 8-slot compartment over the minute) and 284
+without them. Without a fallback, those 284 page requests would be rejected
+fast instead. When recommendations are healthy, both servers accept
+everything (300 and 600).
 
 In production this is a per-dependency semaphore (or a separate thread pool)
 around the client call, as in Resilience4j's `Bulkhead`.

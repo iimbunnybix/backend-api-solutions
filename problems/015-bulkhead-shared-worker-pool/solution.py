@@ -7,8 +7,10 @@ even though the payment service was healthy.
 
 The fix gives each downstream dependency its own small compartment (a
 bulkhead): a counter of how many workers it may hold at once. When a
-compartment is full, the request is rejected immediately instead of taking a
-worker from the shared pool, so the other routes keep their capacity.
+compartment is full, the dependency call is skipped instead of taking a
+worker from the shared pool, so the other routes keep their capacity. For an
+optional dependency (recommendations) the request is still served, just
+without that part; for a required one it is rejected fast.
 """
 from __future__ import annotations
 
@@ -16,6 +18,7 @@ from dataclasses import dataclass, field
 
 ACCEPTED = "accepted"
 REJECTED_POOL_FULL = "rejected_pool_full"
+ACCEPTED_WITHOUT_DEPENDENCY = "accepted_without_dependency"
 REJECTED_BULKHEAD_FULL = "rejected_bulkhead_full"
 
 
@@ -67,11 +70,18 @@ class NaiveSharedPoolServer:
 
 
 class BulkheadServer:
-    """Fixed server: each dependency may hold at most its own share of workers."""
+    """Fixed server: each dependency may hold at most its own share of workers.
 
-    def __init__(self, pool_size: int, bulkhead_limits: dict[str, int]) -> None:
+    ``fallback_seconds`` lists optional dependencies: when their compartment is
+    full the request is still served without them, holding a worker only for
+    that (short) time. Dependencies not listed there are rejected fast.
+    """
+
+    def __init__(self, pool_size: int, bulkhead_limits: dict[str, int],
+                 fallback_seconds: dict[str, float] | None = None) -> None:
         self.pool = WorkerPool(pool_size)
         self.bulkhead_limits = bulkhead_limits
+        self.fallback_seconds = dict(fallback_seconds or {})
         # Finish times of in-flight requests, per dependency.
         self.in_flight: dict[str, list[float]] = {name: [] for name in bulkhead_limits}
 
@@ -89,13 +99,25 @@ class BulkheadServer:
             return False
         return len(self.in_flight[dependency]) >= limit
 
+    def _serve_without_dependency(self, request: Request, now: float) -> str:
+        """Skip a full compartment: degrade if a fallback exists, else reject fast."""
+        fallback = self.fallback_seconds.get(request.dependency)
+        if fallback is None:
+            return REJECTED_BULKHEAD_FULL
+        if not self.pool.has_free_slot():
+            return REJECTED_POOL_FULL
+        # The fallback does only the request's own work, so it holds a shared
+        # worker briefly and does not count against the dependency's compartment.
+        self.pool.occupy(now, fallback)
+        return ACCEPTED_WITHOUT_DEPENDENCY
+
     def handle(self, request: Request, now: float) -> str:
-        """Reject fast when the dependency's compartment is full; else use the pool."""
+        """Skip the dependency when its compartment is full; else use the pool."""
         self._release_finished(now)
         # Check the compartment first: a slow dependency must be refused
         # *before* it gets the chance to take a shared worker.
         if self._compartment_is_full(request.dependency):
-            return REJECTED_BULKHEAD_FULL
+            return self._serve_without_dependency(request, now)
         if not self.pool.has_free_slot():
             return REJECTED_POOL_FULL
         self.pool.occupy(now, request.duration_seconds)
