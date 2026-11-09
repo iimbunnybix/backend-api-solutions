@@ -101,5 +101,32 @@ class FixWithGracefulDegradation(unittest.TestCase):
                          REJECTED_POOL_FULL)
 
 
+class FixLimitsConfiguration(unittest.TestCase):
+    def test_changing_the_callers_dict_later_does_not_crash_the_server(self):
+        limits = {"recommendations": RECOMMENDATIONS_LIMIT}
+        server = BulkheadServer(POOL_SIZE, limits)
+        limits["search"] = 4
+        self.assertEqual(server.handle(Request("search", 1.0), now=0.0), ACCEPTED)
+
+    def test_limit_added_at_runtime_with_set_limit_is_enforced(self):
+        server = make_bulkhead_server()
+        server.set_limit("search", 1)
+        server.handle(Request("search", 10.0), now=0.0)
+        self.assertEqual(server.handle(Request("search", 10.0), now=0.0), REJECTED_BULKHEAD_FULL)
+
+    def test_negative_limit_is_rejected(self):
+        with self.assertRaises(ValueError):
+            BulkheadServer(POOL_SIZE, {"recommendations": -1})
+
+    def test_limit_larger_than_the_pool_is_rejected(self):
+        with self.assertRaises(ValueError):
+            BulkheadServer(POOL_SIZE, {"recommendations": POOL_SIZE + 1})
+
+    def test_limit_of_zero_turns_the_dependency_off(self):
+        server = BulkheadServer(POOL_SIZE, {"recommendations": 0})
+        self.assertEqual(server.handle(Request("recommendations", 1.0), now=0.0),
+                         REJECTED_BULKHEAD_FULL)
+
+
 if __name__ == "__main__":
     unittest.main()

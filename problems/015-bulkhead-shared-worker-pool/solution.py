@@ -80,10 +80,24 @@ class BulkheadServer:
     def __init__(self, pool_size: int, bulkhead_limits: dict[str, int],
                  fallback_seconds: dict[str, float] | None = None) -> None:
         self.pool = WorkerPool(pool_size)
-        self.bulkhead_limits = bulkhead_limits
         self.fallback_seconds = dict(fallback_seconds or {})
+        # Our own copies: changing the caller's dict later must not leave a
+        # limit without its in-flight list. Use set_limit() to change limits.
+        self.bulkhead_limits: dict[str, int] = {}
         # Finish times of in-flight requests, per dependency.
-        self.in_flight: dict[str, list[float]] = {name: [] for name in bulkhead_limits}
+        self.in_flight: dict[str, list[float]] = {}
+        for name, limit in bulkhead_limits.items():
+            self.set_limit(name, limit)
+
+    def set_limit(self, dependency: str, limit: int) -> None:
+        """Add or change one compartment; a typo like -1 or 400 fails loudly."""
+        if limit < 0 or limit > self.pool.capacity:
+            raise ValueError(
+                f"bulkhead limit for {dependency!r} must be between 0 and "
+                f"{self.pool.capacity}, got {limit}")
+        self.bulkhead_limits[dependency] = limit
+        # Keep calls already running so they still count after a change.
+        self.in_flight.setdefault(dependency, [])
 
     def _release_finished(self, now: float) -> None:
         """Free finished requests both from the pool and from their compartments."""
