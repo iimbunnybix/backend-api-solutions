@@ -57,6 +57,7 @@ Every problem folder has the same structure:
 | 040 | [Uploaded contracts showed up as empty 0-byte files after a network blip, with a 201 to the client](problems/040-retry-resends-consumed-body-stream) |
 | 041 | [After a routine database failover, the API kept returning "server closed the connection unexpectedly" until every pod was restarted](problems/041-stale-pool-connections-after-db-failover) |
 | 042 | [After an HTTP/2 proxy went live, checkout failed with "415 Unsupported Media Type" and retried payments were charged twice](problems/042-case-sensitive-header-lookup-behind-http2-proxy) |
+| 043 | [Order API froze completely at the lunch peak with an idle database, and every request ended in "pool timeout"](problems/043-nested-pool-checkout-deadlock) |
 <!-- INDEX:END -->
 
 ## Run the tests
