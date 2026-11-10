@@ -8,7 +8,10 @@ the primary database.
 The fix caches the *absence* too: a "not found" result is stored as a special
 marker with a short TTL, so repeat lookups are answered from the cache. When
 a product is created, its key is invalidated so the new product shows up at
-once instead of waiting for the marker to expire.
+once instead of waiting for the marker to expire. Each delete also bumps a
+per-key invalidation counter, and a reader only writes the marker if the
+counter has not moved since it started, so a read that overlaps a create
+cannot re-cache "not found" after the create's invalidation.
 """
 from __future__ import annotations
 
@@ -71,6 +74,9 @@ class TTLCache:
     def __init__(self, clock: FakeClock) -> None:
         self.clock = clock
         self.entries: dict[str, _CacheEntry] = {}
+        # How many times each key has been invalidated. Readers compare it
+        # before and after their database query to detect an overlapping write.
+        self.invalidations: dict[str, int] = {}
 
     def get(self, key: str) -> object | None:
         """Return the cached value, or None if missing or expired."""
@@ -87,8 +93,24 @@ class TTLCache:
         self.entries[key] = _CacheEntry(value, self.clock.now + ttl_seconds)
 
     def delete(self, key: str) -> None:
-        """Remove a key if present."""
+        """Remove a key if present and record that it was invalidated."""
         self.entries.pop(key, None)
+        self.invalidations[key] = self.invalidations.get(key, 0) + 1
+
+    def invalidation_count(self, key: str) -> int:
+        """Return how many times ``key`` has been invalidated so far."""
+        return self.invalidations.get(key, 0)
+
+    def set_unless_invalidated(self, key: str, value: object, ttl_seconds: float,
+                               invalidations_seen: int) -> None:
+        """Store a value only if the key was not invalidated since the read began.
+
+        In a real cache this check-and-set must be atomic (for example a Lua
+        script in Redis, or a memcached lease).
+        """
+        if self.invalidation_count(key) != invalidations_seen:
+            return
+        self.set(key, value, ttl_seconds)
 
 
 def naive_get_product(cache: TTLCache, database: ProductDatabase,
@@ -111,11 +133,15 @@ def get_product(cache: TTLCache, database: ProductDatabase,
         return None
     if cached is not None:
         return cached  # type: ignore[return-value]
+    # Remember the invalidation count *before* querying: if a create commits
+    # and invalidates while we query, our "not found" is already stale.
+    invalidations_seen = cache.invalidation_count(product_id)
     product = database.find_product(product_id)
     if product is None:
         # Short TTL: if the product is created by a path that forgets to
         # invalidate, it still becomes visible within a minute.
-        cache.set(product_id, NOT_FOUND, NOT_FOUND_TTL_SECONDS)
+        cache.set_unless_invalidated(product_id, NOT_FOUND, NOT_FOUND_TTL_SECONDS,
+                                     invalidations_seen)
         return None
     cache.set(product_id, product, FOUND_TTL_SECONDS)
     return product

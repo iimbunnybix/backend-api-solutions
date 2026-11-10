@@ -10,6 +10,28 @@ SCRAPER_ROUNDS = 20
 SECONDS_BETWEEN_ROUNDS = 6.0
 
 
+class DatabaseWithConcurrentCreate(ProductDatabase):
+    """Fake database where a writer creates the product right after a lookup.
+
+    It models a reader that has queried the database (and seen nothing) but
+    has not yet written NOT_FOUND to the cache when the create commits and
+    invalidates the key.
+    """
+
+    def __init__(self, cache: TTLCache, product_id: str, product: dict) -> None:
+        super().__init__({})
+        self.cache = cache
+        self.pending_create: tuple[str, dict] | None = (product_id, product)
+
+    def find_product(self, product_id: str) -> dict | None:
+        result = super().find_product(product_id)
+        if self.pending_create is not None:
+            new_id, new_product = self.pending_create
+            self.pending_create = None
+            create_product(self.cache, self, new_id, new_product)
+        return result
+
+
 def make_store() -> tuple[TTLCache, ProductDatabase, FakeClock]:
     clock = FakeClock()
     return TTLCache(clock), ProductDatabase({"sku-1": MUG}), clock
@@ -62,6 +84,18 @@ class FixWithNegativeCaching(unittest.TestCase):
         self.assertIsNone(get_product(cache, database, "sku-new"))
         clock.advance(NOT_FOUND_TTL_SECONDS)
         self.assertEqual(get_product(cache, database, "sku-new"), MUG)
+
+    def test_read_overlapping_a_create_does_not_recache_not_found(self):
+        clock = FakeClock()
+        cache = TTLCache(clock)
+        database = DatabaseWithConcurrentCreate(cache, "sku-new", MUG)
+        self.assertIsNone(get_product(cache, database, "sku-new"))
+        self.assertEqual(get_product(cache, database, "sku-new"), MUG)
+
+    def test_read_without_overlapping_write_still_caches_not_found(self):
+        cache, database, _ = make_store()
+        get_product(cache, database, "sku-404")
+        self.assertIs(cache.get("sku-404"), NOT_FOUND)
 
     def test_existing_products_are_still_cached_normally(self):
         cache, database, _ = make_store()

@@ -27,6 +27,11 @@ Cache the absence as well:
    "not in cache".
 3. When a product is created, its cache key is deleted, so it is visible
    immediately instead of after the marker expires.
+4. A read that overlaps a create must not write its stale "not found" after
+   the create's invalidation. The cache keeps a per-key invalidation counter;
+   the reader notes it before querying and writes `NOT_FOUND` only if it has
+   not changed (in production this check-and-set must be atomic, e.g. a Redis
+   Lua script or memcached lease).
 
 With the same scraper traffic, database queries drop from **10,000 to 1,000**:
 each missing ID is queried once, then once more after its 60 s marker expires.
