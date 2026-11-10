@@ -59,6 +59,7 @@ Every problem folder has the same structure:
 | 042 | [After an HTTP/2 proxy went live, checkout failed with "415 Unsupported Media Type" and retried payments were charged twice](problems/042-case-sensitive-header-lookup-behind-http2-proxy) |
 | 043 | [Order API froze completely at the lunch peak with an idle database, and every request ended in "pool timeout"](problems/043-nested-pool-checkout-deadlock) |
 | 044 | [Invoice workers hung for 90 minutes on a call configured with "timeout=10", and month-end billing stalled](problems/044-per-read-timeout-trickle-response) |
+| 045 | [Anonymous visitors saw another company's unreleased products on the public catalogue page](problems/045-pooled-connection-session-state-leak) |
 <!-- INDEX:END -->
 
 ## Run the tests
