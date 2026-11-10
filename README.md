@@ -60,6 +60,7 @@ Every problem folder has the same structure:
 | 043 | [Order API froze completely at the lunch peak with an idle database, and every request ended in "pool timeout"](problems/043-nested-pool-checkout-deadlock) |
 | 044 | [Invoice workers hung for 90 minutes on a call configured with "timeout=10", and month-end billing stalled](problems/044-per-read-timeout-trickle-response) |
 | 045 | [Anonymous visitors saw another company's unreleased products on the public catalogue page](problems/045-pooled-connection-session-state-leak) |
+| 046 | [A customer's sync script ran 120 times over its API quota and was never rate limited](problems/046-batch-endpoint-bypasses-request-rate-limit) |
 <!-- INDEX:END -->
 
 ## Run the tests
