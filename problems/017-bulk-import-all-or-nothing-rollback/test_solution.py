@@ -75,6 +75,14 @@ class FixWithPerRowResults(unittest.TestCase):
         status, _ = bulk_import(ProductDatabase(), make_rows(MAX_BATCH_SIZE, set()))
         self.assertEqual(status, HTTP_OK)
 
+    def test_null_string_and_list_rows_are_reported_invalid_not_a_crash(self):
+        good_row = {"sku": "A", "name": "Item A", "price_cents": 100}
+        status, body = bulk_import(ProductDatabase(), [good_row, None, "x", [1, 2]])
+        self.assertEqual(status, HTTP_MULTI_STATUS)
+        statuses = [result["status"] for result in body["results"]]
+        self.assertEqual(statuses, ["created", "invalid", "invalid", "invalid"])
+        self.assertEqual(body["results"][1]["errors"], ["row must be a JSON object"])
+
     def test_empty_upload_succeeds_with_zero_counts(self):
         status, body = bulk_import(ProductDatabase(), [])
         self.assertEqual(status, HTTP_OK)

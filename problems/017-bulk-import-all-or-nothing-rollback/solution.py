@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 
 MAX_BATCH_SIZE = 1_000
 MAX_NAME_LENGTH = 200
+NOT_AN_OBJECT_ERROR = "row must be a JSON object"
 HTTP_OK = 200
 HTTP_MULTI_STATUS = 207
 HTTP_BAD_REQUEST = 400
@@ -64,8 +65,12 @@ class RowResult:
     errors: list[str] = field(default_factory=list)
 
 
-def validate_row(row: dict) -> list[str]:
+def validate_row(row: object) -> list[str]:
     """Return every problem with a row (not just the first), so one upload fixes all."""
+    # A spreadsheet export can turn a blank line into null; such a row is invalid,
+    # not a reason to crash the whole request after earlier rows were saved.
+    if not isinstance(row, dict):
+        return [NOT_AN_OBJECT_ERROR]
     errors = []
     sku = row.get("sku")
     if not isinstance(sku, str) or not sku.strip():
@@ -98,9 +103,11 @@ def naive_import(database: ProductDatabase, rows: list[dict]) -> tuple[int, dict
     return HTTP_OK, {"imported": len(rows)}
 
 
-def import_one_row(database: ProductDatabase, index: int, row: dict) -> RowResult:
+def import_one_row(database: ProductDatabase, index: int, row: object) -> RowResult:
     """Validate and save a single row in its own small transaction."""
-    sku = row.get("sku") if isinstance(row.get("sku"), str) else None
+    sku = None
+    if isinstance(row, dict) and isinstance(row.get("sku"), str):
+        sku = row["sku"]
     errors = validate_row(row)
     if errors:
         return RowResult(index, sku, STATUS_INVALID, errors)
