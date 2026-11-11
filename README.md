@@ -61,6 +61,7 @@ Every problem folder has the same structure:
 | 044 | [Invoice workers hung for 90 minutes on a call configured with "timeout=10", and month-end billing stalled](problems/044-per-read-timeout-trickle-response) |
 | 045 | [Anonymous visitors saw another company's unreleased products on the public catalogue page](problems/045-pooled-connection-session-state-leak) |
 | 046 | [A customer's sync script ran 120 times over its API quota and was never rate limited](problems/046-batch-endpoint-bypasses-request-rate-limit) |
+| 047 | [Invoice emails stopped going out for a whole afternoon while order webhooks were processed instantly](problems/047-priority-job-queue-starves-low-priority) |
 <!-- INDEX:END -->
 
 ## Run the tests
