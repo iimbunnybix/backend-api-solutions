@@ -1,7 +1,7 @@
 import unittest
 
 from solution import (HTTP_BAD_REQUEST, HTTP_OK, HTTP_PAYLOAD_TOO_LARGE, MAX_BODY_BYTES,
-                      READ_CHUNK_BYTES, BodyRejected, FakeClientStream, handle_upload,
+                      READ_CHUNK_BYTES, BodyRejected, FakeClientStream, Response, handle_upload,
                       naive_read_body, read_body)
 
 MEBIBYTE = 1024 * 1024
@@ -68,6 +68,25 @@ class FixWithBoundedReader(unittest.TestCase):
 
     def test_empty_body_with_zero_length_is_accepted(self):
         self.assertEqual(read_body(FakeClientStream(0), length_header(0)), b"")
+
+
+class FixHeaderNameCase(unittest.TestCase):
+    def test_lowercase_oversized_length_is_rejected_without_reading(self):
+        stream = FakeClientStream(HUGE_UPLOAD_BYTES)
+        response = handle_upload(stream, {"content-length": str(HUGE_UPLOAD_BYTES)})
+        self.assertEqual(response.status, HTTP_PAYLOAD_TOO_LARGE)
+        self.assertEqual(stream.bytes_read, 0)
+
+    def test_lowercase_length_reads_only_the_declared_bytes(self):
+        stream = FakeClientStream(1_000)
+        response = handle_upload(stream, {"content-length": "10"})
+        self.assertEqual(response, Response(HTTP_OK, "received 10 bytes"))
+        self.assertEqual(stream.remaining, 990)
+
+    def test_conflicting_lengths_in_different_case_are_rejected(self):
+        headers = {"Content-Length": "10", "content-length": "20"}
+        response = handle_upload(FakeClientStream(100), headers)
+        self.assertEqual(response.status, HTTP_BAD_REQUEST)
 
 
 if __name__ == "__main__":

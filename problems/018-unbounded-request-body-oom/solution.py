@@ -52,9 +52,27 @@ def naive_read_body(stream: FakeClientStream, headers: dict[str, str]) -> bytes:
     return stream.read()
 
 
+def find_content_length_header(headers: dict[str, str]) -> str | None:
+    """Return the Content-Length value, matching the header name in any case.
+
+    Header names are case-insensitive, and HTTP/2 and most proxies send them
+    lowercase, so an exact "Content-Length" lookup would miss the header.
+    """
+    found_values = []
+    for name, value in headers.items():
+        if name.lower() == "content-length":
+            found_values.append(value)
+    if not found_values:
+        return None
+    # Two spellings with different values make the body boundary ambiguous.
+    if len(set(found_values)) > 1:
+        raise BodyRejected(HTTP_BAD_REQUEST, "conflicting Content-Length headers")
+    return found_values[0]
+
+
 def parse_content_length(headers: dict[str, str]) -> int | None:
     """Return the declared length, None if absent, or reject a malformed value."""
-    raw_value = headers.get("Content-Length")
+    raw_value = find_content_length_header(headers)
     if raw_value is None:
         return None
     # int() would accept "+5", " 5" and "5_0"; HTTP allows digits only.

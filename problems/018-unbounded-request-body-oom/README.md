@@ -24,7 +24,9 @@ does not help because the memory is already spent.
 `read_body()` bounds memory for every request:
 
 1. **Validate Content-Length** strictly (digits only). Values like `-1`,
-   `+5` or `abc` get **400**.
+   `+5` or `abc` get **400**. The header name is matched in any case
+   (HTTP/2 and most proxies send `content-length`), and two spellings with
+   different values are rejected with **400**.
 2. If the declared length is over `MAX_BODY_BYTES`, return **413 Payload Too
    Large** straight away, without reading any of the body.
 3. If the length is acceptable, read **exactly** that many bytes in 64 KiB
