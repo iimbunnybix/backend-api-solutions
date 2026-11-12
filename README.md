@@ -63,6 +63,7 @@ Every problem folder has the same structure:
 | 046 | [A customer's sync script ran 120 times over its API quota and was never rate limited](problems/046-batch-endpoint-bypasses-request-rate-limit) |
 | 047 | [Invoice emails stopped going out for a whole afternoon while order webhooks were processed instantly](problems/047-priority-job-queue-starves-low-priority) |
 | 048 | [The app kept showing a ₹19,990 price for a ₹1,999 product hours after the typo was fixed](problems/048-last-modified-second-resolution-stale-cache) |
+| 049 | [Product pages kept showing "503 Service Unavailable" for five minutes after a 30-second outage was over](problems/049-cached-5xx-errors-outlive-outage) |
 <!-- INDEX:END -->
 
 ## Run the tests
