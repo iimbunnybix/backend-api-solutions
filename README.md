@@ -65,6 +65,7 @@ Every problem folder has the same structure:
 | 048 | [The app kept showing a ₹19,990 price for a ₹1,999 product hours after the typo was fixed](problems/048-last-modified-second-resolution-stale-cache) |
 | 049 | [Product pages kept showing "503 Service Unavailable" for five minutes after a 30-second outage was over](problems/049-cached-5xx-errors-outlive-outage) |
 | 050 | [Every new order failed with "Duplicate entry '2147483647' for key 'PRIMARY'" while the orders table was only 70% full](problems/050-int32-primary-key-exhaustion) |
+| 051 | [Every order page failed during a 2-minute maintenance window, even though the API said "come back in 120 seconds"](problems/051-retry-after-ignored-clients-hammer-maintenance) |
 <!-- INDEX:END -->
 
 ## Run the tests
