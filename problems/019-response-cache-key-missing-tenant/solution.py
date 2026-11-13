@@ -79,6 +79,24 @@ def build_cache_key(request: Request, vary: VarySpec) -> str:
     return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
 
 
+def has_ambiguous_varied_header(request: Request, vary: VarySpec) -> bool:
+    """True if a header the route varies on is sent more than once in different casings.
+
+    The key builder and the handler could then read different copies of the
+    header, so the stored body might not match the key it is stored under.
+    """
+    varied_names = {name.lower() for name in vary.headers}
+    seen_counts: dict[str, int] = {}
+    for name in request.headers:
+        lower_name = name.lower()
+        if lower_name in varied_names:
+            seen_counts[lower_name] = seen_counts.get(lower_name, 0) + 1
+    for count in seen_counts.values():
+        if count > 1:
+            return True
+    return False
+
+
 class NaiveResponseCache:
     """The original cache: one entry per path, shared by every tenant."""
 
@@ -109,6 +127,9 @@ class VaryAwareResponseCache:
         vary = self.vary_by_route.get(request.path)
         if vary is None:
             # Unknown dependencies: caching would risk leaking data, so don't.
+            return handler(request)
+        if has_ambiguous_varied_header(request, vary):
+            # Never let one ambiguous request decide what other users receive.
             return handler(request)
         key = build_cache_key(request, vary)
         if key not in self.entries:

@@ -76,6 +76,19 @@ class FixVaryAwareCache(unittest.TestCase):
             cache.get_or_compute(price_request("shop-a"), handler)
         self.assertEqual(handler.calls, 1)
 
+    def test_header_sent_in_two_casings_does_not_poison_the_cache(self):
+        cache = vary_cache()
+        handler = CountingPriceHandler()
+        ambiguous = Request(
+            path=PRICES_PATH,
+            tenant_id="shop-a",
+            headers={"Accept-Language": "en", "accept-language": "de"},
+            query={"currency": "EUR"},
+        )
+        cache.get_or_compute(ambiguous, handler)
+        body = cache.get_or_compute(price_request("shop-a", language="de"), handler)
+        self.assertEqual(body, "prices for shop-a in de/EUR")
+
     def test_route_without_vary_spec_is_never_cached(self):
         cache = VaryAwareResponseCache()
         handler = CountingPriceHandler()
