@@ -110,6 +110,25 @@ class FixSignUp(unittest.TestCase):
         with self.assertRaises(ValueError):
             sign_up(fixed_db(), "a" * 33, "a@example.com")
 
+    def test_zero_width_space_email_is_rejected(self):
+        conn = fixed_db()
+        sign_up(conn, "alice", "alice@example.com")
+        lookalike_email = "alice" + "\u200b" + "@example.com"
+        with self.assertRaises(ValueError):
+            sign_up(conn, "alice2", lookalike_email)
+
+    def test_blank_email_is_rejected(self):
+        with self.assertRaises(ValueError):
+            sign_up(fixed_db(), "bob", "   ")
+
+    def test_email_without_at_sign_is_rejected(self):
+        with self.assertRaises(ValueError):
+            sign_up(fixed_db(), "bob", "bob.example.com")
+
+    def test_email_with_empty_domain_is_rejected(self):
+        with self.assertRaises(ValueError):
+            sign_up(fixed_db(), "bob", "bob@")
+
     def test_distinct_usernames_are_both_accepted(self):
         conn = fixed_db()
         sign_up(conn, "alice", "a@example.com")

@@ -37,7 +37,9 @@ key in a separate column with the `UNIQUE` index. The insert itself is the
 check, so concurrent sign-ups for `Bob` and `bob` cannot both win. Login
 looks users up by the same key. Usernames are also rejected when empty, longer
 than 32 characters, or containing Unicode "C" category characters (control
-and invisible format characters such as the zero-width space).
+and invisible format characters such as the zero-width space). Emails get
+the same invisible-character check, must not be blank, and must contain
+exactly one `@` with text on both sides.
 
 ## Trade-offs
 - NFKC + casefold does not catch **confusables** from different scripts: the
