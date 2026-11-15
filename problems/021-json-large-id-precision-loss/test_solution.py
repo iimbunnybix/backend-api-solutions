@@ -65,8 +65,18 @@ class FixStrictIdParsing(unittest.TestCase):
     def test_string_id_is_accepted(self):
         self.assertEqual(parse_id(str(ORDER_ID)), ORDER_ID)
 
-    def test_exact_integer_from_an_old_client_is_accepted(self):
-        self.assertEqual(parse_id(ORDER_ID), ORDER_ID)
+    def test_safe_integer_from_an_old_client_is_accepted(self):
+        self.assertEqual(parse_id(JAVASCRIPT_MAX_SAFE_INTEGER), JAVASCRIPT_MAX_SAFE_INTEGER)
+
+    def test_integer_above_safe_range_is_rejected_because_it_may_be_rounded(self):
+        with self.assertRaises(InvalidId):
+            parse_id(ORDER_ID)
+
+    def test_id_rounded_by_an_old_javascript_client_is_rejected(self):
+        rounded_id = parse_like_javascript(naive_serialize_order(make_order()))["id"]
+        request_body = json.dumps({"order_id": rounded_id})
+        with self.assertRaises(InvalidId):
+            parse_id(json.loads(request_body)["order_id"])
 
     def test_float_id_is_rejected_because_it_may_already_be_rounded(self):
         with self.assertRaises(InvalidId):
@@ -87,7 +97,7 @@ class FixStrictIdParsing(unittest.TestCase):
                 parse_id(raw)
 
     def test_id_above_bigint_range_is_rejected(self):
-        self.assertEqual(parse_id(MAX_ID), MAX_ID)
+        self.assertEqual(parse_id(str(MAX_ID)), MAX_ID)
         with self.assertRaises(InvalidId):
             parse_id(str(MAX_ID + 1))
 

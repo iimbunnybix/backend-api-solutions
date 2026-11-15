@@ -6,7 +6,8 @@ number into an IEEE-754 double, which holds integers exactly only up to 2**53,
 so IDs above that were silently rounded: the web app opened, cancelled or
 refunded a *different* order whose ID happened to round to the same value.
 This version sends IDs as decimal strings and parses incoming IDs strictly,
-accepting both strings (new clients) and exact integers (old clients).
+accepting strings (new clients) and, from old clients, only integers small
+enough that a JavaScript client cannot have rounded them.
 """
 from __future__ import annotations
 
@@ -66,17 +67,26 @@ def is_javascript_safe(value: int) -> bool:
 def parse_id(raw: Any) -> int:
     """Turn an ID from a request body or URL into an int, or raise InvalidId.
 
-    Accepts decimal strings ("1891...") and ints. Rejects floats because a
-    float ID has usually already been rounded by the client, and rejects
-    bools because Python treats True as the int 1.
+    Accepts decimal strings ("1891...") and JavaScript-safe ints. Rejects
+    floats and ints above 2**53 - 1 because such an ID has probably already
+    been rounded by a JavaScript client (JSON.stringify writes the rounded
+    double back as a plain integer), and rejects bools because Python treats
+    True as the int 1.
     """
     if isinstance(raw, bool):
         raise InvalidId("ID must not be a boolean")
     if isinstance(raw, int):
-        return _check_range(raw)
+        return _check_range(_check_javascript_safe(raw))
     if isinstance(raw, str):
         return _check_range(_parse_decimal_string(raw))
     raise InvalidId(f"ID must be a string or integer, got {type(raw).__name__}")
+
+
+def _check_javascript_safe(value: int) -> int:
+    """Numeric IDs above 2**53 - 1 may be rounded; such IDs must be sent as strings."""
+    if not is_javascript_safe(value):
+        raise InvalidId(f"IDs above {JAVASCRIPT_MAX_SAFE_INTEGER} must be sent as strings")
+    return value
 
 
 def _parse_decimal_string(raw: str) -> int:

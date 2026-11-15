@@ -28,7 +28,10 @@ valid, only the client's number type was too small.
   Google APIs use string IDs, and protobuf's JSON mapping encodes int64 as a
   string).
 - **Parse incoming IDs strictly.** `parse_id` accepts decimal strings from new
-  clients and exact integers from old clients during the migration, and
+  clients and, during the migration, numeric IDs from old clients only up to
+  2⁵³ − 1. A larger JSON integer is rejected: an old web client that rounded
+  the ID writes the rounded double back with `JSON.stringify` as a plain
+  integer (`1891234567890123520`), so it cannot be trusted. It also
   rejects floats (a float ID has probably already been rounded), booleans,
   and strings that Python's `int()` would quietly accept (`" 12"`, `"+12"`,
   `"1_2"`, Arabic-Indic digits). IDs must be in `1..2⁶³−1` to fit the BIGINT
