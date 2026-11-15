@@ -101,6 +101,14 @@ class FixStrictIdParsing(unittest.TestCase):
         with self.assertRaises(InvalidId):
             parse_id(str(MAX_ID + 1))
 
+    def test_twenty_digit_string_is_rejected(self):
+        with self.assertRaises(InvalidId):
+            parse_id("1" * 20)
+
+    def test_huge_digit_string_is_rejected_as_invalid_id_not_value_error(self):
+        with self.assertRaises(InvalidId):
+            parse_id("9" * 5000)
+
     def test_none_is_rejected(self):
         with self.assertRaises(InvalidId):
             parse_id(None)

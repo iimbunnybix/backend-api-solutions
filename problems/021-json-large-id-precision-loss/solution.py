@@ -20,6 +20,10 @@ JAVASCRIPT_MAX_SAFE_INTEGER = 2**53 - 1
 # IDs are stored in a signed 64-bit BIGINT column.
 MAX_ID = 2**63 - 1
 
+# MAX_ID has 19 digits; anything longer is out of range, and refusing it before
+# int() also avoids Python's 4,300-digit conversion limit (a plain ValueError).
+MAX_ID_DIGITS = len(str(MAX_ID))
+
 # Fields in API responses that carry database IDs.
 ID_FIELDS = ("id", "customer_id")
 
@@ -93,6 +97,8 @@ def _parse_decimal_string(raw: str) -> int:
     """Parse ASCII digits only; int() alone would accept " 12", "+12", "1_2" and "١٢"."""
     if not raw.isascii() or not raw.isdigit():
         raise InvalidId(f"ID must be ASCII digits, got {raw!r}")
+    if len(raw) > MAX_ID_DIGITS:
+        raise InvalidId(f"ID too long: {len(raw)} digits")
     return int(raw)
 
 
