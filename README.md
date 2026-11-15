@@ -69,6 +69,7 @@ Every problem folder has the same structure:
 | 052 | [Product pages for "Zoë" and prices in ₹ failed with "Unexpected end of JSON input", while English pages worked](problems/052-content-length-counts-characters-truncates-json) |
 | 053 | [Users were unsubscribed from the newsletter before they had even opened the email](problems/053-get-unsubscribe-link-triggered-by-email-scanners) |
 | 054 | [A hospital night shift ended up with zero doctors on call after two leave requests at the same second](problems/054-snapshot-isolation-write-skew-empty-on-call-rota) |
+| 055 | [Bulk price update marked the wrong products as failed, and the products that really failed showed "saved"](problems/055-parallel-batch-results-returned-in-completion-order) |
 <!-- INDEX:END -->
 
 ## Run the tests
