@@ -91,6 +91,14 @@ class FixRequestsMustCarryTheOffset(unittest.TestCase):
         with self.assertRaises(NaiveDatetimeError):
             parse_api_timestamp(None)
 
+    def test_year_one_with_positive_offset_is_rejected_not_crashed(self):
+        with self.assertRaises(NaiveDatetimeError):
+            parse_api_timestamp("0001-01-01T00:00:00+05:30")
+
+    def test_year_9999_with_negative_offset_is_rejected_not_crashed(self):
+        with self.assertRaises(NaiveDatetimeError):
+            parse_api_timestamp("9999-12-31T23:59:59-05:00")
+
     def test_request_to_response_round_trip_keeps_the_instant(self):
         stored = parse_api_timestamp("2026-03-09T23:00:00-05:00")
         self.assertEqual(format_api_timestamp(stored), "2026-03-10T04:00:00+00:00")

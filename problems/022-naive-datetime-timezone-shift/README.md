@@ -33,7 +33,9 @@ Make every timestamp at the API boundary an exact instant:
 - `parse_api_timestamp` accepts ISO-8601 with an offset (`+05:30`, `-05:00`,
   or `Z`), rejects strings without one and non-string JSON values (an epoch
   number, `null`) with `NaiveDatetimeError` (HTTP 400),
-  and converts to UTC for storage.
+  and converts to UTC for storage. Values whose UTC conversion would fall
+  outside `datetime.min..datetime.max` (e.g. `0001-01-01T00:00:00+05:30`)
+  are also rejected with a 400 instead of an `OverflowError`.
 - `format_api_timestamp` / `serialize_appointment` always emit UTC with the
   offset written out: `"2026-03-10T09:00:00+00:00"`. Clients convert to their
   own zone for display; in the test the India client sees 14:30 and the New

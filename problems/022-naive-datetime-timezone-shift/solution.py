@@ -67,7 +67,12 @@ def parse_api_timestamp(timestamp_text: object) -> datetime:
         parsed = datetime.fromisoformat(timestamp_text.replace(UTC_DESIGNATOR, UTC_OFFSET_TEXT))
     except ValueError as error:
         raise NaiveDatetimeError(f"not an ISO-8601 timestamp: {timestamp_text!r}") from error
-    return to_utc(parsed)
+    # Shifting a value like "0001-01-01T00:00:00+05:30" to UTC lands before
+    # datetime.min, which raises OverflowError; report it as a bad request.
+    try:
+        return to_utc(parsed)
+    except OverflowError as error:
+        raise NaiveDatetimeError(f"timestamp out of range: {timestamp_text!r}") from error
 
 
 def format_api_timestamp(value: datetime) -> str:
