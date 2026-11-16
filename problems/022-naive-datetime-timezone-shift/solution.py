@@ -52,11 +52,17 @@ def to_utc(value: datetime) -> datetime:
     return require_aware(value).astimezone(timezone.utc)
 
 
-def parse_api_timestamp(timestamp_text: str) -> datetime:
+def parse_api_timestamp(timestamp_text: object) -> datetime:
     """Parse a timestamp from a request body; it must carry an offset.
 
     Returns the instant in UTC, ready to store.
     """
+    # The value comes from decoded JSON, so it can be a number (a Unix epoch)
+    # or null; reject those as a 400 instead of crashing with AttributeError.
+    if not isinstance(timestamp_text, str):
+        raise NaiveDatetimeError(
+            f"timestamp must be an ISO-8601 string with an offset, got {timestamp_text!r}"
+        )
     try:
         parsed = datetime.fromisoformat(timestamp_text.replace(UTC_DESIGNATOR, UTC_OFFSET_TEXT))
     except ValueError as error:

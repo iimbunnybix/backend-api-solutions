@@ -31,7 +31,8 @@ Make every timestamp at the API boundary an exact instant:
 - `require_aware` / `to_utc` refuse naive datetimes instead of guessing a
   zone, so code that builds a naive value fails in tests, not in production.
 - `parse_api_timestamp` accepts ISO-8601 with an offset (`+05:30`, `-05:00`,
-  or `Z`), rejects strings without one with `NaiveDatetimeError` (HTTP 400),
+  or `Z`), rejects strings without one and non-string JSON values (an epoch
+  number, `null`) with `NaiveDatetimeError` (HTTP 400),
   and converts to UTC for storage.
 - `format_api_timestamp` / `serialize_appointment` always emit UTC with the
   offset written out: `"2026-03-10T09:00:00+00:00"`. Clients convert to their
