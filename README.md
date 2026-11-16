@@ -71,6 +71,7 @@ Every problem folder has the same structure:
 | 054 | [A hospital night shift ended up with zero doctors on call after two leave requests at the same second](problems/054-snapshot-isolation-write-skew-empty-on-call-rota) |
 | 055 | [Bulk price update marked the wrong products as failed, and the products that really failed showed "saved"](problems/055-parallel-batch-results-returned-in-completion-order) |
 | 056 | [Customers who resumed an interrupted download got a "corrupt installer" error right after each new release](problems/056-resumed-download-range-without-if-range-corrupts-file) |
+| 057 | [Wallet balances of exactly $10 or $100 showed "Amount unavailable" in the mobile app after a serialiser clean-up](problems/057-decimal-exponent-notation-rejected-by-clients) |
 <!-- INDEX:END -->
 
 ## Run the tests
