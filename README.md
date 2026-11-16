@@ -72,6 +72,7 @@ Every problem folder has the same structure:
 | 055 | [Bulk price update marked the wrong products as failed, and the products that really failed showed "saved"](problems/055-parallel-batch-results-returned-in-completion-order) |
 | 056 | [Customers who resumed an interrupted download got a "corrupt installer" error right after each new release](problems/056-resumed-download-range-without-if-range-corrupts-file) |
 | 057 | [Wallet balances of exactly $10 or $100 showed "Amount unavailable" in the mobile app after a serialiser clean-up](problems/057-decimal-exponent-notation-rejected-by-clients) |
+| 058 | [A user tapped "Delete selected" with nothing selected and every customer's notes disappeared](problems/058-empty-ids-filter-bulk-delete-wipes-table) |
 <!-- INDEX:END -->
 
 ## Run the tests
