@@ -74,6 +74,7 @@ Every problem folder has the same structure:
 | 057 | [Wallet balances of exactly $10 or $100 showed "Amount unavailable" in the mobile app after a serialiser clean-up](problems/057-decimal-exponent-notation-rejected-by-clients) |
 | 058 | [A user tapped "Delete selected" with nothing selected and every customer's notes disappeared](problems/058-empty-ids-filter-bulk-delete-wipes-table) |
 | 059 | [Finance found refunds and invoices off by a few paise on every order that used a "₹100 off" coupon](problems/059-proportional-discount-split-rounding-drifts) |
+| 060 | [The support dashboard's "pending or failed" order filter showed only failed orders, and stuck pending payments went unnoticed](problems/060-repeated-query-param-keeps-only-last-value) |
 <!-- INDEX:END -->
 
 ## Run the tests
