@@ -75,6 +75,7 @@ Every problem folder has the same structure:
 | 058 | [A user tapped "Delete selected" with nothing selected and every customer's notes disappeared](problems/058-empty-ids-filter-bulk-delete-wipes-table) |
 | 059 | [Finance found refunds and invoices off by a few paise on every order that used a "₹100 off" coupon](problems/059-proportional-discount-split-rounding-drifts) |
 | 060 | [The support dashboard's "pending or failed" order filter showed only failed orders, and stuck pending payments went unnoticed](problems/060-repeated-query-param-keeps-only-last-value) |
+| 061 | [Customers who signed up on the 31st were billed on the 28th of every month after February, and finance saw revenue slide earlier each month](problems/061-month-end-renewal-date-drifts-to-28th) |
 <!-- INDEX:END -->
 
 ## Run the tests
