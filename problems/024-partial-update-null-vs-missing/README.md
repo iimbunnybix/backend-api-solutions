@@ -32,7 +32,7 @@ Model the three cases separately, following JSON Merge Patch (RFC 7396):
 - A unique `MISSING` sentinel (`body.get(name, MISSING)`) separates "absent"
   from `None`; `parse_patch` returns only the fields that were sent.
 - Each field has a `FieldRule`: exact type (so `true` is not a string),
-  nullability (`display_name` cannot be cleared) and max length.
+  nullability and a non-blank minimum (`display_name` cannot be cleared with `null`, `""` or spaces) and max length.
 - Unknown fields (`"phnoe"`, or `"user_id"`) are rejected with 422 instead of
   being silently ignored, which also blocks mass assignment of server-owned
   fields.

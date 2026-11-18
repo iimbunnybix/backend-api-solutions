@@ -89,6 +89,16 @@ class FixValidation(unittest.TestCase):
     def test_too_long_value_is_rejected(self):
         self.assert_rejected({"display_name": "x" * 51})
 
+    def test_empty_display_name_is_rejected(self):
+        self.assert_rejected({"display_name": ""})
+
+    def test_whitespace_only_display_name_is_rejected(self):
+        self.assert_rejected({"display_name": "   "})
+
+    def test_display_name_with_surrounding_spaces_is_accepted(self):
+        updated = apply_patch(stored_profile(), {"display_name": " Ravi "})
+        self.assertEqual(updated["display_name"], " Ravi ")
+
     def test_non_object_body_is_rejected(self):
         for body in ([], None, "name", 3):
             self.assert_rejected(body)

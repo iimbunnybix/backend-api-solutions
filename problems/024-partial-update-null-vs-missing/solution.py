@@ -33,10 +33,12 @@ class FieldRule:
     python_type: type
     nullable: bool
     max_length: int = 200
+    # Minimum length after stripping whitespace; 1 means "must not be blank".
+    min_length: int = 0
 
 
 PROFILE_FIELDS: dict[str, FieldRule] = {
-    "display_name": FieldRule(str, nullable=False, max_length=50),
+    "display_name": FieldRule(str, nullable=False, max_length=50, min_length=1),
     "phone": FieldRule(str, nullable=True, max_length=20),
     "bio": FieldRule(str, nullable=True, max_length=500),
 }
@@ -71,6 +73,9 @@ def _validate_value(name: str, rule: FieldRule, value: Any) -> None:
         raise PatchValidationError(f"{name} must be a {rule.python_type.__name__}")
     if isinstance(value, str) and len(value) > rule.max_length:
         raise PatchValidationError(f"{name} is longer than {rule.max_length} characters")
+    # "" or "   " clears a required field just as surely as null would.
+    if isinstance(value, str) and len(value.strip()) < rule.min_length:
+        raise PatchValidationError(f"{name} cannot be blank")
 
 
 def parse_patch(body: Any) -> dict[str, Any]:
