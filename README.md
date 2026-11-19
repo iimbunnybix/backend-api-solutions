@@ -77,6 +77,7 @@ Every problem folder has the same structure:
 | 060 | [The support dashboard's "pending or failed" order filter showed only failed orders, and stuck pending payments went unnoticed](problems/060-repeated-query-param-keeps-only-last-value) |
 | 061 | [Customers who signed up on the 31st were billed on the 28th of every month after February, and finance saw revenue slide earlier each month](problems/061-month-end-renewal-date-drifts-to-28th) |
 | 062 | [A German seller's bulk price upload listed a €12.50 kettle at €1,250, and a €1,234.56 espresso machine at about €1.23](problems/062-decimal-comma-price-import-100x-prices) |
+| 063 | [Product pages for SKUs like "TOOLS/DRILL-18V" returned 404 "store DRILL-18V not found" even though clients encoded the slash](problems/063-encoded-slash-in-sku-routes-to-wrong-endpoint) |
 <!-- INDEX:END -->
 
 ## Run the tests
