@@ -80,6 +80,7 @@ Every problem folder has the same structure:
 | 063 | [Product pages for SKUs like "TOOLS/DRILL-18V" returned 404 "store DRILL-18V not found" even though clients encoded the slash](problems/063-encoded-slash-in-sku-routes-to-wrong-endpoint) |
 | 064 | [Items added to the cart vanished a second later whenever the product page was still loading in the background](problems/064-concurrent-requests-overwrite-whole-session-cart-items-vanish) |
 | 065 | [The product-listing cache hit rate stayed below 50% during a sale, and the database fell over serving the same 20 pages](problems/065-query-param-order-fragments-response-cache) |
+| 066 | [Customers on mobile data never saw "your order has shipped" in the app, although the notification service logged every event as sent](problems/066-sse-reconnect-without-last-event-id-drops-notifications) |
 <!-- INDEX:END -->
 
 ## Run the tests
