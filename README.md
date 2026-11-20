@@ -79,6 +79,7 @@ Every problem folder has the same structure:
 | 062 | [A German seller's bulk price upload listed a €12.50 kettle at €1,250, and a €1,234.56 espresso machine at about €1.23](problems/062-decimal-comma-price-import-100x-prices) |
 | 063 | [Product pages for SKUs like "TOOLS/DRILL-18V" returned 404 "store DRILL-18V not found" even though clients encoded the slash](problems/063-encoded-slash-in-sku-routes-to-wrong-endpoint) |
 | 064 | [Items added to the cart vanished a second later whenever the product page was still loading in the background](problems/064-concurrent-requests-overwrite-whole-session-cart-items-vanish) |
+| 065 | [The product-listing cache hit rate stayed below 50% during a sale, and the database fell over serving the same 20 pages](problems/065-query-param-order-fragments-response-cache) |
 <!-- INDEX:END -->
 
 ## Run the tests
