@@ -82,6 +82,7 @@ Every problem folder has the same structure:
 | 065 | [The product-listing cache hit rate stayed below 50% during a sale, and the database fell over serving the same 20 pages](problems/065-query-param-order-fragments-response-cache) |
 | 066 | [Customers on mobile data never saw "your order has shipped" in the app, although the notification service logged every event as sent](problems/066-sse-reconnect-without-last-event-id-drops-notifications) |
 | 067 | [Customers who set their browser to German kept getting French product pages, and Swiss users got English](problems/067-accept-language-q-values-ignored-wrong-language) |
+| 068 | [Support agents searched for customers with "+" in their email, got "user not found", and created duplicate accounts](problems/068-plus-in-email-query-param-decoded-as-space) |
 <!-- INDEX:END -->
 
 ## Run the tests
