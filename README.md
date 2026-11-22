@@ -81,6 +81,7 @@ Every problem folder has the same structure:
 | 064 | [Items added to the cart vanished a second later whenever the product page was still loading in the background](problems/064-concurrent-requests-overwrite-whole-session-cart-items-vanish) |
 | 065 | [The product-listing cache hit rate stayed below 50% during a sale, and the database fell over serving the same 20 pages](problems/065-query-param-order-fragments-response-cache) |
 | 066 | [Customers on mobile data never saw "your order has shipped" in the app, although the notification service logged every event as sent](problems/066-sse-reconnect-without-last-event-id-drops-notifications) |
+| 067 | [Customers who set their browser to German kept getting French product pages, and Swiss users got English](problems/067-accept-language-q-values-ignored-wrong-language) |
 <!-- INDEX:END -->
 
 ## Run the tests
