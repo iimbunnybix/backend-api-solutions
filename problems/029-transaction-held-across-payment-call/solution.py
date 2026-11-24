@@ -130,25 +130,39 @@ def naive_place_order(pool: ConnectionPool, provider: FakePaymentProvider, clock
 
 
 # --- the fix ------------------------------------------------------------------
-def record_pending_order(pool: ConnectionPool, clock: FakeClock, order_id: str, amount_cents: int) -> None:
-    """Short transaction #1: persist intent before any money moves."""
+@contextmanager
+def short_transaction(pool: ConnectionPool) -> Iterator[sqlite3.Connection]:
+    """Borrow a connection for one transaction: COMMIT on success, ROLLBACK on any error.
+
+    WHY: if an error escaped with the transaction still open, the pool would get
+    back a connection that holds the write lock, and the next request on it
+    would fail at BEGIN ("cannot start a transaction within a transaction").
+    """
     with pool.connection() as conn:
         conn.execute("BEGIN IMMEDIATE")
+        try:
+            yield conn
+        except Exception:
+            conn.execute("ROLLBACK")
+            raise
+        conn.execute("COMMIT")
+
+
+def record_pending_order(pool: ConnectionPool, clock: FakeClock, order_id: str, amount_cents: int) -> None:
+    """Short transaction #1: persist intent before any money moves."""
+    with short_transaction(pool) as conn:
         conn.execute("INSERT INTO orders VALUES (?, ?, ?, ?)",
                      (order_id, amount_cents, STATUS_PENDING, clock.now))
         clock.advance(DB_WORK_SECONDS)
-        conn.execute("COMMIT")
 
 
 def record_payment_outcome(pool: ConnectionPool, clock: FakeClock, order_id: str, status: str) -> None:
     """Short transaction #2: only a still-PENDING order may move to a final state."""
-    with pool.connection() as conn:
-        conn.execute("BEGIN IMMEDIATE")
+    with short_transaction(pool) as conn:
         # WHY the status guard: the reconciler may have finished this order already.
         conn.execute("UPDATE orders SET status = ? WHERE id = ? AND status = ?",
                      (status, order_id, STATUS_PENDING))
         clock.advance(DB_WORK_SECONDS)
-        conn.execute("COMMIT")
 
 
 def place_order(pool: ConnectionPool, provider: FakePaymentProvider, clock: FakeClock,

@@ -1,3 +1,4 @@
+import sqlite3
 import unittest
 
 from solution import (DB_WORK_SECONDS, STATUS_FAILED, STATUS_PAID, STATUS_PENDING, ConnectionPool,
@@ -108,6 +109,15 @@ class FixShortTransactionsAroundTheCall(unittest.TestCase):
         place_order(pool, provider, clock, "order-1", AMOUNT_CENTS)
         needed = connections_needed(PEAK_CHECKOUTS_PER_SECOND, sum(pool.hold_times))
         self.assertLess(needed, 1)
+
+
+    def test_duplicate_order_id_does_not_leave_the_connection_in_a_transaction(self):
+        clock, conn, pool, provider = make_system()
+        place_order(pool, provider, clock, "order-1", 100)
+        with self.assertRaises(sqlite3.IntegrityError):
+            place_order(pool, provider, clock, "order-1", 100)
+        self.assertFalse(conn.in_transaction)
+        self.assertEqual(place_order(pool, provider, clock, "order-2", 100), STATUS_PAID)
 
 
 class ReadmeNumbers(unittest.TestCase):
