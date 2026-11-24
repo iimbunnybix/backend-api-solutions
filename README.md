@@ -85,6 +85,7 @@ Every problem folder has the same structure:
 | 068 | [Support agents searched for customers with "+" in their email, got "user not found", and created duplicate accounts](problems/068-plus-in-email-query-param-decoded-as-space) |
 | 069 | [One partner call with `?limit=500000` pinned the orders database at 100% CPU and timed out every other request](problems/069-unbounded-page-size-limit-param) |
 | 070 | [Customers named "Émile" or "anna" were missing from the A-Z contact directory and support could not find them](problems/070-codepoint-sorted-names-break-alphabetical-order) |
+| 071 | [Checkout pods grew in memory until OOMKilled, and the "cached" catalog service saw no drop in traffic](problems/071-lru-cache-on-request-method-leaks-memory-never-hits) |
 <!-- INDEX:END -->
 
 ## Run the tests
