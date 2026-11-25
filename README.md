@@ -87,6 +87,7 @@ Every problem folder has the same structure:
 | 070 | [Customers named "Émile" or "anna" were missing from the A-Z contact directory and support could not find them](problems/070-codepoint-sorted-names-break-alphabetical-order) |
 | 071 | [Checkout pods grew in memory until OOMKilled, and the "cached" catalog service saw no drop in traffic](problems/071-lru-cache-on-request-method-leaks-memory-never-hits) |
 | 072 | [Every order from the new app version failed with 415 Unsupported Media Type, though the JSON body was valid](problems/072-content-type-charset-parameter-rejected-with-415) |
+| 073 | [Orders placed from the new app showed "order placed" but never reached the database](problems/073-post-redirect-301-replayed-as-get-orders-lost) |
 <!-- INDEX:END -->
 
 ## Run the tests
