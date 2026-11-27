@@ -91,6 +91,7 @@ Every problem folder has the same structure:
 | 074 | [Product pages re-downloaded the full catalog JSON on every visit after the CDN enabled compression](problems/074-weak-etag-strict-compare-never-returns-304) |
 | 075 | [Partner order exports were missing the newest orders, and small shops got empty exports](problems/075-floor-divided-page-count-hides-last-orders) |
 | 076 | [Customers' webhook handlers ran every event six times, and the dashboard said delivery had failed](problems/076-webhook-sender-retries-204-as-failure-duplicate-deliveries) |
+| 077 | [Older thermostats failed every firmware check with "invalid JSON" while the same URL worked fine in a browser](problems/077-missing-vary-accept-encoding-serves-gzip-to-plain-clients) |
 <!-- INDEX:END -->
 
 ## Run the tests
