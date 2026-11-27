@@ -92,6 +92,7 @@ Every problem folder has the same structure:
 | 075 | [Partner order exports were missing the newest orders, and small shops got empty exports](problems/075-floor-divided-page-count-hides-last-orders) |
 | 076 | [Customers' webhook handlers ran every event six times, and the dashboard said delivery had failed](problems/076-webhook-sender-retries-204-as-failure-duplicate-deliveries) |
 | 077 | [Older thermostats failed every firmware check with "invalid JSON" while the same URL worked fine in a browser](problems/077-missing-vary-accept-encoding-serves-gzip-to-plain-clients) |
+| 078 | [At month-end, one "Export invoices" click produced dozens of identical exports and dozens of export charges](problems/078-job-status-404-before-worker-starts-clients-resubmit) |
 <!-- INDEX:END -->
 
 ## Run the tests
