@@ -94,6 +94,7 @@ Every problem folder has the same structure:
 | 077 | [Older thermostats failed every firmware check with "invalid JSON" while the same URL worked fine in a browser](problems/077-missing-vary-accept-encoding-serves-gzip-to-plain-clients) |
 | 078 | [At month-end, one "Export invoices" click produced dozens of identical exports and dozens of export charges](problems/078-job-status-404-before-worker-starts-clients-resubmit) |
 | 079 | [Customers saw warnings about other companies' products on their quotes, and the list got longer all day](problems/079-mutable-default-argument-leaks-warnings-across-requests) |
+| 080 | [Customers' partner integration kept disconnecting itself every hour with "invalid_grant"](problems/080-concurrent-token-refresh-trips-rotation-reuse-detection) |
 <!-- INDEX:END -->
 
 ## Run the tests
